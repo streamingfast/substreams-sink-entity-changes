@@ -1,0 +1,15 @@
+specVersion: v0.1.0
+package:
+  name: substreams_entity_change
+  version: v0.1.0
+  url: https://github.com/streamingfast/substreams-entity-change
+  doc: |
+    Protobuf definitions for Substreams Entity Change modules.
+
+    This package does not include any modules.
+
+protobuf:
+  files:
+    - entity/v1/entity.proto
+  importPaths:
+    - ./proto
