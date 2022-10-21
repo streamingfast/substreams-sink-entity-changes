@@ -59,8 +59,8 @@ pub mod value {
         Bigint(::prost::alloc::string::String),
         #[prost(string, tag="4")]
         String(::prost::alloc::string::String),
-        #[prost(bytes, tag="5")]
-        Bytes(::prost::alloc::vec::Vec<u8>),
+        #[prost(string, tag="5")]
+        Bytes(::prost::alloc::string::String),
         #[prost(bool, tag="6")]
         Bool(bool),
         // reserved 7 to 9;  // For future types

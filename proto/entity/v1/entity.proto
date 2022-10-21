@@ -26,7 +26,7 @@ message Value {
     string bigdecimal = 2;
     string bigint = 3;
     string string = 4;
-    bytes bytes = 5;
+    string bytes = 5;
     bool bool = 6;
 
     //reserved 7 to 9;  // For future types
