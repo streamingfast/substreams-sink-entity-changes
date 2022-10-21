@@ -345,7 +345,6 @@ version = "0.1.0"
 dependencies = [
  "base64",
  "prost",
- "prost-build",
  "prost-types",
  "substreams",
 ]

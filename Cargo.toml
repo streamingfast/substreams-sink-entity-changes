@@ -9,6 +9,3 @@ prost = "0.11.0"
 prost-types = "0.11.0"
 base64 = "0.13.0"
 substreams = { git = "https://github.com/streamingfast/substreams-rs", branch = "develop" }
-
-[build-dependencies]
-prost-build = "0.11.0"
