@@ -286,10 +286,32 @@ fn str_vec_to_pb(items: Vec<String>) -> Value {
 mod test {
     use crate::change::ToField;
     use crate::pb::entity::value::Typed;
-    use crate::pb::entity::{Field, Value};
+    use crate::pb::entity::{Array, Field, Value};
     use substreams::pb::substreams::store_delta::Operation;
-    use substreams::scalar::BigDecimal;
-    use substreams::store::DeltaBigDecimal;
+    use substreams::scalar::{BigDecimal, BigInt};
+    use substreams::store::{
+        DeltaArray, DeltaBigDecimal, DeltaBigInt, DeltaBool, DeltaBytes, DeltaString,
+    };
+
+    const FIELD_NAME: &str = "field.name.1";
+
+    #[test]
+    fn i32_change() {
+        let i32_change: i32 = 1;
+        assert_eq!(
+            create_expected_field(FIELD_NAME, None, Some(Typed::Int32(1))),
+            i32_change.to_field(FIELD_NAME)
+        );
+    }
+
+    #[test]
+    fn big_decimal_change() {
+        let bd_change = BigDecimal::from(1 as i32);
+        assert_eq!(
+            create_expected_field(FIELD_NAME, None, Some(Typed::Bigdecimal("1".to_string()))),
+            bd_change.to_field(FIELD_NAME)
+        );
+    }
 
     #[test]
     fn delta_big_decimal_change() {
@@ -301,33 +323,228 @@ mod test {
             new_value: BigDecimal::from(20),
         };
 
-        let expected_field = Field {
-            name: "field.name.1".to_string(),
-            new_value: Some(Value {
-                typed: Some(Typed::Bigdecimal("20".to_string())),
-            }),
-            old_value: Some(Value {
-                typed: Some(Typed::Bigdecimal("10".to_string())),
-            }),
-        };
-
-        let actual_field = delta.to_field("field.name.1");
-        assert_eq!(expected_field, actual_field);
+        assert_eq!(
+            create_expected_field(
+                FIELD_NAME,
+                Some(Typed::Bigdecimal("10".to_string())),
+                Some(Typed::Bigdecimal("20".to_string()))
+            ),
+            delta.to_field(FIELD_NAME)
+        );
     }
 
     #[test]
-    fn big_decimal_change() {
-        let bd = BigDecimal::from(1 as i32);
+    fn big_int_change() {
+        let bi_change = BigInt::from(1 as i32);
+        assert_eq!(
+            create_expected_field(FIELD_NAME, None, Some(Typed::Bigint("1".to_string()))),
+            bi_change.to_field(FIELD_NAME)
+        );
+    }
 
-        let expected_field = Field {
-            name: "field.name.1".to_string(),
-            new_value: Some(Value {
-                typed: Some(Typed::Bigdecimal("1".to_string())),
-            }),
-            old_value: None,
+    #[test]
+    fn delta_big_int_change() {
+        let delta = DeltaBigInt {
+            operation: Operation::Update,
+            ordinal: 0,
+            key: "change".to_string(),
+            old_value: BigInt::from(10),
+            new_value: BigInt::from(20),
         };
 
-        let actual_field = bd.to_field("field.name.1");
-        assert_eq!(expected_field, actual_field);
+        assert_eq!(
+            create_expected_field(
+                FIELD_NAME,
+                Some(Typed::Bigint("10".to_string())),
+                Some(Typed::Bigint("20".to_string()))
+            ),
+            delta.to_field(FIELD_NAME)
+        );
+    }
+
+    #[test]
+    fn string_change() {
+        let string_change = String::from("string");
+        assert_eq!(
+            create_expected_field(FIELD_NAME, None, Some(Typed::String("string".to_string()))),
+            string_change.to_field(FIELD_NAME)
+        );
+    }
+
+    #[test]
+    fn delta_string_change() {
+        let delta = DeltaString {
+            operation: Operation::Update,
+            ordinal: 0,
+            key: "change".to_string(),
+            old_value: String::from("string1"),
+            new_value: String::from("string2"),
+        };
+
+        assert_eq!(
+            create_expected_field(
+                FIELD_NAME,
+                Some(Typed::String("string1".to_string())),
+                Some(Typed::String("string2".to_string()))
+            ),
+            delta.to_field(FIELD_NAME)
+        );
+    }
+
+    #[test]
+    fn bytes_change() {
+        let bytes_change = Vec::from("bytes");
+        assert_eq!(
+            create_expected_field(FIELD_NAME, None, Some(Typed::Bytes("Ynl0ZXM=".to_string()))),
+            bytes_change.to_field(FIELD_NAME)
+        );
+    }
+
+    #[test]
+    fn delta_bytes_change() {
+        let delta = DeltaBytes {
+            operation: Operation::Update,
+            ordinal: 0,
+            key: "change".to_string(),
+            old_value: Vec::from("bytes1"),
+            new_value: Vec::from("bytes2"),
+        };
+
+        assert_eq!(
+            create_expected_field(
+                FIELD_NAME,
+                Some(Typed::Bytes("Ynl0ZXMx".to_string())),
+                Some(Typed::Bytes("Ynl0ZXMy".to_string()))
+            ),
+            delta.to_field(FIELD_NAME)
+        );
+    }
+
+    #[test]
+    fn bool_change() {
+        let bool_change = true;
+        assert_eq!(
+            create_expected_field(FIELD_NAME, None, Some(Typed::Bool(true))),
+            bool_change.to_field(FIELD_NAME)
+        );
+    }
+
+    #[test]
+    fn delta_bool_change() {
+        let delta = DeltaBool {
+            operation: Operation::Update,
+            ordinal: 0,
+            key: "change".to_string(),
+            old_value: true,
+            new_value: false,
+        };
+
+        assert_eq!(
+            create_expected_field(
+                FIELD_NAME,
+                Some(Typed::Bool(true)),
+                Some(Typed::Bool(false)),
+            ),
+            delta.to_field(FIELD_NAME)
+        );
+    }
+
+    #[test]
+    fn vec_string_change() {
+        let vec_string_change: Vec<String> = vec![
+            String::from("string1"),
+            String::from("string2"),
+            String::from("string3"),
+        ];
+        assert_eq!(
+            create_expected_field(
+                FIELD_NAME,
+                None,
+                Some(Typed::Array(Array {
+                    value: vec![
+                        Value {
+                            typed: Some(Typed::String("string1".to_string()))
+                        },
+                        Value {
+                            typed: Some(Typed::String("string2".to_string()))
+                        },
+                        Value {
+                            typed: Some(Typed::String("string3".to_string()))
+                        },
+                    ]
+                }))
+            ),
+            vec_string_change.to_field(FIELD_NAME)
+        );
+    }
+
+    #[test]
+    fn delta_vec_string_change() {
+        let delta = DeltaArray {
+            operation: Operation::Update,
+            ordinal: 0,
+            key: "change".to_string(),
+            old_value: vec![
+                "string1".to_string(),
+                "string2".to_string(),
+                "string3".to_string(),
+            ],
+            new_value: vec![
+                "string1.1".to_string(),
+                "string2.1".to_string(),
+                "string3.1".to_string(),
+            ],
+        };
+
+        assert_eq!(
+            create_expected_field(
+                FIELD_NAME,
+                Some(Typed::Array(Array {
+                    value: vec![
+                        Value {
+                            typed: Some(Typed::String("string1".to_string()))
+                        },
+                        Value {
+                            typed: Some(Typed::String("string2".to_string()))
+                        },
+                        Value {
+                            typed: Some(Typed::String("string3".to_string()))
+                        },
+                    ]
+                })),
+                Some(Typed::Array(Array {
+                    value: vec![
+                        Value {
+                            typed: Some(Typed::String("string1.1".to_string()))
+                        },
+                        Value {
+                            typed: Some(Typed::String("string2.1".to_string()))
+                        },
+                        Value {
+                            typed: Some(Typed::String("string3.1".to_string()))
+                        },
+                    ]
+                })),
+            ),
+            delta.to_field(FIELD_NAME)
+        );
+    }
+
+    fn create_expected_field<N: AsRef<str>>(
+        name: N,
+        old_value: Option<Typed>,
+        new_value: Option<Typed>,
+    ) -> Field {
+        let mut field = Field {
+            name: name.as_ref().to_string(),
+            ..Default::default()
+        };
+        if old_value.is_some() {
+            field.old_value = Some(Value { typed: old_value })
+        }
+        if new_value.is_some() {
+            field.new_value = Some(Value { typed: new_value })
+        }
+        field
     }
 }
