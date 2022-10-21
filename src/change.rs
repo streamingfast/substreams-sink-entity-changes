@@ -1,302 +1,333 @@
+use crate::pb::entity::value::Typed;
+use crate::pb::entity::{Array, Field, Value};
 use std::str;
-use substreams::pb::substreams::StoreDelta;
+use substreams::pb::substreams::store_delta::Operation;
 use substreams::scalar::{BigDecimal, BigInt};
-use substreams::store::{DeltaArray, DeltaBigDecimal, DeltaBigInt};
-use substreams::Hex;
+use substreams::store::{
+    DeltaArray, DeltaBigDecimal, DeltaBigInt, DeltaBool, DeltaBytes, DeltaI32, DeltaString,
+};
 
-#[derive(Debug)]
-pub struct Int32Change {
-    pub old_value: i32,
-    pub new_value: i32,
+pub trait ToField {
+    fn to_field<N: AsRef<str>>(&self, name: N) -> Field;
 }
 
-impl From<StoreDelta> for Int32Change {
-    fn from(delta: StoreDelta) -> Self {
-        let (int_bytes, _) = delta
-            .old_value
-            .as_slice()
-            .split_at(std::mem::size_of::<i32>());
-        let old_value: i32 = i32::from_be_bytes(int_bytes.try_into().unwrap());
+// ---------- Int32 ----------
+impl ToField for i32 {
+    fn to_field<N: AsRef<str>>(&self, name: N) -> Field {
+        Field {
+            name: name.as_ref().to_string(),
+            new_value: Some(Value {
+                typed: Some(Typed::Int32(*self)),
+            }),
+            old_value: None,
+        }
+    }
+}
 
-        let (int_bytes, _) = delta
-            .new_value
-            .as_slice()
-            .split_at(std::mem::size_of::<i32>());
-        let new_value: i32 = i32::from_be_bytes(int_bytes.try_into().unwrap());
-        Int32Change {
+impl ToField for DeltaI32 {
+    fn to_field<N: AsRef<str>>(&self, name: N) -> Field {
+        let new_value: Option<Value> = Some(Value {
+            typed: Some(Typed::Int32(self.new_value)),
+        });
+        let mut old_value: Option<Value> = None;
+
+        match Operation::from(self.operation) {
+            Operation::Update => {
+                old_value = Some(Value {
+                    typed: Some(Typed::Int32(self.old_value)),
+                });
+            }
+            Operation::Create => {}
+            _ => panic!("unsupported operation {:?}", self.operation),
+        }
+
+        Field {
+            name: name.as_ref().to_string(),
+            new_value,
             old_value,
+        }
+    }
+}
+
+// ---------- BigDecimal ----------
+impl ToField for BigDecimal {
+    fn to_field<N: AsRef<str>>(&self, name: N) -> Field {
+        Field {
+            name: name.as_ref().to_string(),
+            new_value: Some(Value {
+                typed: Some(Typed::Bigdecimal(self.to_string().clone())),
+            }),
+            old_value: None,
+        }
+    }
+}
+
+impl ToField for DeltaBigDecimal {
+    fn to_field<N: AsRef<str>>(&self, name: N) -> Field {
+        let new_value: Option<Value> = Some(Value {
+            typed: Some(Typed::Bigdecimal(self.new_value.to_string().clone())),
+        });
+        let mut old_value: Option<Value> = None;
+
+        match Operation::from(self.operation) {
+            Operation::Update => {
+                old_value = Some(Value {
+                    typed: Some(Typed::Bigdecimal(self.old_value.to_string().clone())),
+                });
+            }
+            Operation::Create => {}
+            _ => panic!("unsupported operation {:?}", self.operation),
+        }
+
+        Field {
+            name: name.as_ref().to_string(),
             new_value,
+            old_value,
+        }
+    }
+}
+// ---------- BigInt ----------
+impl ToField for BigInt {
+    fn to_field<N: AsRef<str>>(&self, name: N) -> Field {
+        Field {
+            name: name.as_ref().to_string(),
+            new_value: Some(Value {
+                typed: Some(Typed::Bigint(self.to_string().clone())),
+            }),
+            old_value: None,
         }
     }
 }
 
-impl From<i32> for Int32Change {
-    fn from(new_value: i32) -> Self {
-        Int32Change {
-            old_value: i32::default(),
+impl ToField for DeltaBigInt {
+    fn to_field<N: AsRef<str>>(&self, name: N) -> Field {
+        let new_value: Option<Value> = Some(Value {
+            typed: Some(Typed::Bigint(self.new_value.to_string().clone())),
+        });
+        let mut old_value: Option<Value> = None;
+
+        match Operation::from(self.operation) {
+            Operation::Update => {
+                old_value = Some(Value {
+                    typed: Some(Typed::Bigint(self.old_value.to_string().clone())),
+                });
+            }
+            Operation::Create => {}
+            _ => panic!("unsupported operation {:?}", self.operation),
+        }
+
+        Field {
+            name: name.as_ref().to_string(),
             new_value,
+            old_value,
         }
     }
 }
 
-// ---------- BigDecimalChange ----------
-#[derive(Debug)]
-pub struct BigDecimalChange {
-    pub old_value: String,
-    pub new_value: String,
-}
-
-impl From<StoreDelta> for BigDecimalChange {
-    fn from(delta: StoreDelta) -> Self {
-        BigDecimalChange {
-            old_value: BigDecimal::from_store_bytes(delta.old_value).to_string(),
-            new_value: BigDecimal::from_store_bytes(delta.new_value).to_string(),
+// ---------- String ----------
+impl ToField for String {
+    fn to_field<N: AsRef<str>>(&self, name: N) -> Field {
+        Field {
+            name: name.as_ref().to_string(),
+            new_value: Some(Value {
+                typed: Some(Typed::String(self.to_string())),
+            }),
+            old_value: None,
         }
     }
 }
 
-impl From<DeltaBigDecimal> for BigDecimalChange {
-    fn from(delta: DeltaBigDecimal) -> Self {
-        BigDecimalChange {
-            old_value: delta.old_value.to_string(),
-            new_value: delta.new_value.to_string(),
-        }
-    }
-}
+impl ToField for DeltaString {
+    fn to_field<N: AsRef<str>>(&self, name: N) -> Field {
+        let new_value: Option<Value> = Some(Value {
+            typed: Some(Typed::String(self.new_value.to_string())),
+        });
+        let mut old_value: Option<Value> = None;
 
-impl From<BigDecimal> for BigDecimalChange {
-    fn from(new_value: BigDecimal) -> Self {
-        BigDecimalChange {
-            old_value: "0".to_string(),
-            new_value: new_value.to_string(),
+        match Operation::from(self.operation) {
+            Operation::Update => {
+                old_value = Some(Value {
+                    typed: Some(Typed::String(self.old_value.to_string())),
+                });
+            }
+            Operation::Create => {}
+            _ => panic!("unsupported operation {:?}", self.operation),
         }
-    }
-}
 
-impl From<String> for BigDecimalChange {
-    fn from(new_value: String) -> Self {
-        BigDecimalChange {
-            old_value: "0".to_string(),
+        Field {
+            name: name.as_ref().to_string(),
             new_value,
+            old_value,
         }
     }
 }
 
-// ---------- BigIntChange ----------
-#[derive(Debug)]
-pub struct BigIntChange {
-    pub old_value: String,
-    pub new_value: String,
-}
-
-impl From<StoreDelta> for BigIntChange {
-    fn from(delta: StoreDelta) -> Self {
-        BigIntChange {
-            old_value: BigInt::from_store_bytes(delta.old_value).to_string(),
-            new_value: BigInt::from_store_bytes(delta.new_value).to_string(),
+// ---------- Bytes ----------
+impl ToField for Vec<u8> {
+    fn to_field<N: AsRef<str>>(&self, name: N) -> Field {
+        Field {
+            name: name.as_ref().to_string(),
+            new_value: Some(Value {
+                typed: Some(Typed::Bytes(base64::encode(self.clone()))),
+            }),
+            old_value: None,
         }
     }
 }
 
-impl From<BigInt> for BigIntChange {
-    fn from(new_value: BigInt) -> Self {
-        BigIntChange {
-            old_value: "0".to_string(),
-            new_value: new_value.to_string(),
-        }
-    }
-}
+impl ToField for DeltaBytes {
+    fn to_field<N: AsRef<str>>(&self, name: N) -> Field {
+        let new_value: Option<Value> = Some(Value {
+            typed: Some(Typed::Bytes(base64::encode(self.new_value.clone()))),
+        });
+        let mut old_value: Option<Value> = None;
 
-impl From<String> for BigIntChange {
-    fn from(new_value: String) -> Self {
-        BigIntChange {
-            old_value: "0".to_string(),
+        match Operation::from(self.operation) {
+            Operation::Update => {
+                old_value = Some(Value {
+                    typed: Some(Typed::Bytes(base64::encode(self.old_value.clone()))),
+                });
+            }
+            Operation::Create => {}
+            _ => panic!("unsupported operation {:?}", self.operation),
+        }
+
+        Field {
+            name: name.as_ref().to_string(),
             new_value,
-        }
-    }
-}
-
-impl From<i32> for BigIntChange {
-    fn from(new_value: i32) -> Self {
-        BigIntChange {
-            old_value: "0".to_string(),
-            new_value: new_value.to_string(),
-        }
-    }
-}
-
-impl From<u32> for BigIntChange {
-    fn from(new_value: u32) -> Self {
-        BigIntChange {
-            old_value: "0".to_string(),
-            new_value: new_value.to_string(),
-        }
-    }
-}
-
-impl From<u64> for BigIntChange {
-    fn from(new_value: u64) -> Self {
-        BigIntChange {
-            old_value: "0".to_string(),
-            new_value: new_value.to_string(),
-        }
-    }
-}
-
-impl From<(BigInt, BigInt)> for BigIntChange {
-    fn from(change: (BigInt, BigInt)) -> Self {
-        BigIntChange {
-            old_value: change.0.to_string(),
-            new_value: change.1.to_string(),
-        }
-    }
-}
-
-impl From<(String, String)> for BigIntChange {
-    fn from(change: (String, String)) -> Self {
-        BigIntChange {
-            old_value: change.0,
-            new_value: change.1,
-        }
-    }
-}
-
-impl From<DeltaBigInt> for BigIntChange {
-    fn from(delta: DeltaBigInt) -> Self {
-        BigIntChange {
-            old_value: delta.old_value.to_string(),
-            new_value: delta.new_value.to_string(),
-        }
-    }
-}
-
-// ---------- StringChange ----------
-#[derive(Debug)]
-pub struct StringChange {
-    pub old_value: String,
-    pub new_value: String,
-}
-
-impl From<StoreDelta> for StringChange {
-    fn from(delta: StoreDelta) -> Self {
-        StringChange {
-            old_value: str::from_utf8(delta.old_value.as_slice())
-                .unwrap()
-                .to_string(),
-            new_value: str::from_utf8(delta.new_value.as_slice())
-                .unwrap()
-                .to_string(),
-        }
-    }
-}
-
-impl From<String> for StringChange {
-    fn from(new_value: String) -> Self {
-        StringChange {
-            old_value: String::default(),
-            new_value,
-        }
-    }
-}
-
-impl From<&String> for StringChange {
-    fn from(new_value: &String) -> Self {
-        StringChange {
-            old_value: String::default(),
-            new_value: new_value.to_string(),
-        }
-    }
-}
-
-impl From<&str> for StringChange {
-    fn from(new_value: &str) -> Self {
-        StringChange {
-            old_value: String::default(),
-            new_value: new_value.to_string(),
-        }
-    }
-}
-
-impl From<Hex<[u8; 20]>> for StringChange {
-    fn from(new_value: Hex<[u8; 20]>) -> Self {
-        StringChange {
-            old_value: String::default(),
-            new_value: new_value.to_string(),
-        }
-    }
-}
-
-impl From<i64> for StringChange {
-    fn from(new_value: i64) -> Self {
-        StringChange {
-            old_value: String::default(),
-            new_value: new_value.to_string(),
-        }
-    }
-}
-
-// ---------- BytesChange ----------
-#[derive(Debug)]
-pub struct BytesChange {
-    pub old_value: Vec<u8>,
-    pub new_value: Vec<u8>,
-}
-
-impl From<StoreDelta> for BytesChange {
-    fn from(delta: StoreDelta) -> Self {
-        BytesChange {
-            old_value: Vec::from(base64::encode(delta.old_value).as_str()),
-            new_value: Vec::from(base64::encode(delta.new_value).as_str()),
-        }
-    }
-}
-
-impl From<String> for BytesChange {
-    fn from(new_value: String) -> Self {
-        BytesChange {
-            old_value: Vec::default(),
-            new_value: Vec::from(base64::encode(new_value).as_str()),
+            old_value,
         }
     }
 }
 
 // ---------- BoolChange ----------
-#[derive(Debug)]
-pub struct BoolChange {
-    pub old_value: bool,
-    pub new_value: bool,
-}
-
-impl From<StoreDelta> for BoolChange {
-    fn from(delta: StoreDelta) -> Self {
-        BoolChange {
-            old_value: !delta.old_value.contains(&(0 as u8)),
-            new_value: !delta.new_value.contains(&(0 as u8)),
+impl ToField for bool {
+    fn to_field<N: AsRef<str>>(&self, name: N) -> Field {
+        Field {
+            name: name.as_ref().to_string(),
+            new_value: Some(Value {
+                typed: Some(Typed::Bool(*self)),
+            }),
+            old_value: None,
         }
     }
 }
 
-// ---------- StringArrayChange ----------
-#[derive(Debug)]
-pub struct StringArrayChange {
-    pub old_value: Vec<String>,
-    pub new_value: Vec<String>,
-}
+impl ToField for DeltaBool {
+    fn to_field<N: AsRef<str>>(&self, name: N) -> Field {
+        let new_value: Option<Value> = Some(Value {
+            typed: Some(Typed::Bool(self.new_value)),
+        });
+        let mut old_value: Option<Value> = None;
 
-impl From<DeltaArray<String>> for StringArrayChange {
-    fn from(items: DeltaArray<String>) -> Self {
-        StringArrayChange {
-            old_value: items.old_value,
-            new_value: items.new_value,
+        match Operation::from(self.operation) {
+            Operation::Update => {
+                old_value = Some(Value {
+                    typed: Some(Typed::Bool(self.old_value)),
+                });
+            }
+            Operation::Create => {}
+            _ => panic!("unsupported operation {:?}", self.operation),
         }
-    }
-}
 
-impl From<Vec<String>> for StringArrayChange {
-    fn from(new_value: Vec<String>) -> Self {
-        StringArrayChange {
-            old_value: vec![],
+        Field {
+            name: name.as_ref().to_string(),
             new_value,
+            old_value,
         }
+    }
+}
+
+// ---------- StringArray ----------
+impl ToField for Vec<String> {
+    fn to_field<N: AsRef<str>>(&self, name: N) -> Field {
+        Field {
+            name: name.as_ref().to_string(),
+            new_value: Some(str_vec_to_pb(self.to_vec())),
+            old_value: None,
+        }
+    }
+}
+
+impl ToField for DeltaArray<String> {
+    fn to_field<N: AsRef<str>>(&self, name: N) -> Field {
+        let new_value: Option<Value> = Some(str_vec_to_pb(self.new_value.clone()));
+        let mut old_value: Option<Value> = None;
+
+        match Operation::from(self.operation) {
+            Operation::Update => {
+                old_value = Some(str_vec_to_pb(self.old_value.clone()));
+            }
+            Operation::Create => {}
+            _ => panic!("unsupported operation {:?}", self.operation),
+        }
+
+        Field {
+            name: name.as_ref().to_string(),
+            new_value,
+            old_value,
+        }
+    }
+}
+
+fn str_vec_to_pb(items: Vec<String>) -> Value {
+    let mut list: Vec<Value> = vec![];
+    for item in items.iter() {
+        list.push(Value {
+            typed: Some(Typed::String(item.clone())),
+        });
+    }
+    Value {
+        typed: Some(Typed::Array(Array { value: list })),
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::change::ToField;
+    use crate::pb::entity::value::Typed;
+    use crate::pb::entity::{Field, Value};
+    use substreams::pb::substreams::store_delta::Operation;
+    use substreams::scalar::BigDecimal;
+    use substreams::store::DeltaBigDecimal;
+
+    #[test]
+    fn delta_big_decimal_change() {
+        let delta = DeltaBigDecimal {
+            operation: Operation::Update,
+            ordinal: 0,
+            key: "change".to_string(),
+            old_value: BigDecimal::from(10),
+            new_value: BigDecimal::from(20),
+        };
+
+        let expected_field = Field {
+            name: "field.name.1".to_string(),
+            new_value: Some(Value {
+                typed: Some(Typed::Bigdecimal("20".to_string())),
+            }),
+            old_value: Some(Value {
+                typed: Some(Typed::Bigdecimal("10".to_string())),
+            }),
+        };
+
+        let actual_field = delta.to_field("field.name.1");
+        assert_eq!(expected_field, actual_field);
+    }
+
+    #[test]
+    fn big_decimal_change() {
+        let bd = BigDecimal::from(1 as i32);
+
+        let expected_field = Field {
+            name: "field.name.1".to_string(),
+            new_value: Some(Value {
+                typed: Some(Typed::Bigdecimal("1".to_string())),
+            }),
+            old_value: None,
+        };
+
+        let actual_field = bd.to_field("field.name.1");
+        assert_eq!(expected_field, actual_field);
     }
 }
