@@ -4,7 +4,7 @@ use std::str;
 use substreams::pb::substreams::store_delta::Operation;
 use substreams::scalar::{BigDecimal, BigInt};
 use substreams::store::{
-    DeltaArray, DeltaBigDecimal, DeltaBigInt, DeltaBool, DeltaBytes, DeltaI32, DeltaString,
+    DeltaArray, DeltaBigDecimal, DeltaBigInt, DeltaBool, DeltaBytes, DeltaInt32, DeltaString,
 };
 
 pub trait ToField {
@@ -24,7 +24,7 @@ impl ToField for i32 {
     }
 }
 
-impl ToField for DeltaI32 {
+impl ToField for DeltaInt32 {
     fn to_field<N: AsRef<str>>(&self, name: N) -> Field {
         let new_value: Option<Value> = Some(Value {
             typed: Some(Typed::Int32(self.new_value)),
