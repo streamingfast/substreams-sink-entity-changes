@@ -1,6 +1,6 @@
 [package]
 name = "substreams-entity-change"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "Substreams entity change library containing helpers"
 authors = ["StreamingFast Contributors <team@streamingfast.io>"]
@@ -13,7 +13,7 @@ categories = ["api-bindings", "external-ffi-bindings", "wasm"]
 rust-version = "1.60"
 
 [dependencies]
-prost = "0.11.0"
-prost-types = "0.11.0"
+prost = "^0.11.0"
+prost-types = "^0.11.0"
 base64 = "0.13.0"
-substreams = "^0.3.0"
+substreams = "^0.4.0"
