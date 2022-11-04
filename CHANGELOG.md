@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 * Add `f64` and `i64` and there respective Deltas to be converted to `BigDecimal` and `BigInt`
 
+## [0.2.0](https://github.com/streamingfast/substreams-entity-change/releases/tag/v0.2.0)
+
+* Replace `DeltaI32` with `DeltaInt32`
+* Bump `substreams`
+
 ## [0.1.0](https://github.com/streamingfast/substreams-entity-change/releases/tag/v0.1.0)
 
 * Added `entity.proto` containing proto message definitions
