@@ -8,222 +8,203 @@ use substreams::store::{
 };
 
 pub trait ToField {
-    fn to_field<N: AsRef<str>>(&self, name: N) -> Field;
+    fn to_field<N: AsRef<str>>(self, name: N) -> Field;
 }
 
-// ---------- Int32 ----------
-impl ToField for i32 {
-    fn to_field<N: AsRef<str>>(&self, name: N) -> Field {
-        Field {
-            name: name.as_ref().to_string(),
-            new_value: Some(Value {
-                typed: Some(Typed::Int32(*self)),
-            }),
-            old_value: None,
-        }
+impl Into<Typed> for i32 {
+    fn into(self) -> Typed {
+        Typed::Int32(self)
     }
 }
 
 impl ToField for DeltaInt32 {
-    fn to_field<N: AsRef<str>>(&self, name: N) -> Field {
-        let new_value: Option<Value> = Some(Value {
-            typed: Some(Typed::Int32(self.new_value)),
-        });
-        let mut old_value: Option<Value> = None;
+    fn to_field<N: AsRef<str>>(self, name: N) -> Field {
+        ToField::to_field(&self, name)
+    }
+}
 
-        match Operation::from(self.operation) {
-            Operation::Update => {
-                old_value = Some(Value {
-                    typed: Some(Typed::Int32(self.old_value)),
-                });
-            }
-            Operation::Create => {}
-            _ => panic!("unsupported operation {:?}", self.operation),
-        }
-
-        Field {
-            name: name.as_ref().to_string(),
-            new_value,
-            old_value,
-        }
+impl ToField for &DeltaInt32 {
+    fn to_field<N: AsRef<str>>(self, name: N) -> Field {
+        delta_to_field(
+            name.as_ref(),
+            self.operation,
+            self.old_value,
+            self.new_value,
+        )
     }
 }
 
 // ---------- BigDecimal ----------
-impl ToField for BigDecimal {
-    fn to_field<N: AsRef<str>>(&self, name: N) -> Field {
-        Field {
-            name: name.as_ref().to_string(),
-            new_value: Some(Value {
-                typed: Some(Typed::Bigdecimal(self.to_string().clone())),
-            }),
-            old_value: None,
-        }
+impl Into<Typed> for BigDecimal {
+    fn into(self) -> Typed {
+        Into::into(&self)
+    }
+}
+
+impl Into<Typed> for &BigDecimal {
+    fn into(self) -> Typed {
+        Typed::Bigdecimal(self.to_string())
     }
 }
 
 impl ToField for DeltaBigDecimal {
-    fn to_field<N: AsRef<str>>(&self, name: N) -> Field {
-        let new_value: Option<Value> = Some(Value {
-            typed: Some(Typed::Bigdecimal(self.new_value.to_string().clone())),
-        });
-        let mut old_value: Option<Value> = None;
+    fn to_field<N: AsRef<str>>(self, name: N) -> Field {
+        delta_to_field(
+            name.as_ref(),
+            self.operation,
+            self.old_value,
+            self.new_value,
+        )
+    }
+}
 
-        match Operation::from(self.operation) {
-            Operation::Update => {
-                old_value = Some(Value {
-                    typed: Some(Typed::Bigdecimal(self.old_value.to_string().clone())),
-                });
-            }
-            Operation::Create => {}
-            _ => panic!("unsupported operation {:?}", self.operation),
-        }
-
-        Field {
-            name: name.as_ref().to_string(),
-            new_value,
-            old_value,
-        }
+impl ToField for &DeltaBigDecimal {
+    fn to_field<N: AsRef<str>>(self, name: N) -> Field {
+        delta_to_field(
+            name.as_ref(),
+            self.operation,
+            &self.old_value,
+            &self.new_value,
+        )
     }
 }
 // ---------- BigInt ----------
-impl ToField for BigInt {
-    fn to_field<N: AsRef<str>>(&self, name: N) -> Field {
-        Field {
-            name: name.as_ref().to_string(),
-            new_value: Some(Value {
-                typed: Some(Typed::Bigint(self.to_string().clone())),
-            }),
-            old_value: None,
-        }
+impl Into<Typed> for BigInt {
+    fn into(self) -> Typed {
+        Into::into(&self)
+    }
+}
+
+impl Into<Typed> for &BigInt {
+    fn into(self) -> Typed {
+        Typed::Bigint(self.to_string())
     }
 }
 
 impl ToField for DeltaBigInt {
-    fn to_field<N: AsRef<str>>(&self, name: N) -> Field {
-        let new_value: Option<Value> = Some(Value {
-            typed: Some(Typed::Bigint(self.new_value.to_string().clone())),
-        });
-        let mut old_value: Option<Value> = None;
+    fn to_field<N: AsRef<str>>(self, name: N) -> Field {
+        delta_to_field(
+            name.as_ref(),
+            self.operation,
+            self.old_value,
+            self.new_value,
+        )
+    }
+}
 
-        match Operation::from(self.operation) {
-            Operation::Update => {
-                old_value = Some(Value {
-                    typed: Some(Typed::Bigint(self.old_value.to_string().clone())),
-                });
-            }
-            Operation::Create => {}
-            _ => panic!("unsupported operation {:?}", self.operation),
-        }
-
-        Field {
-            name: name.as_ref().to_string(),
-            new_value,
-            old_value,
-        }
+impl ToField for &DeltaBigInt {
+    fn to_field<N: AsRef<str>>(self, name: N) -> Field {
+        delta_to_field(
+            name.as_ref(),
+            self.operation,
+            &self.old_value,
+            &self.new_value,
+        )
     }
 }
 
 // ---------- String ----------
-impl ToField for String {
-    fn to_field<N: AsRef<str>>(&self, name: N) -> Field {
-        Field {
-            name: name.as_ref().to_string(),
-            new_value: Some(Value {
-                typed: Some(Typed::String(self.to_string())),
-            }),
-            old_value: None,
-        }
+impl Into<Typed> for String {
+    fn into(self) -> Typed {
+        Typed::String(self)
+    }
+}
+
+impl Into<Typed> for &String {
+    fn into(self) -> Typed {
+        Typed::String(self.clone())
     }
 }
 
 impl ToField for DeltaString {
-    fn to_field<N: AsRef<str>>(&self, name: N) -> Field {
-        let new_value: Option<Value> = Some(Value {
-            typed: Some(Typed::String(self.new_value.to_string())),
-        });
-        let mut old_value: Option<Value> = None;
+    fn to_field<N: AsRef<str>>(self, name: N) -> Field {
+        delta_to_field(
+            name.as_ref(),
+            self.operation,
+            self.old_value,
+            self.new_value,
+        )
+    }
+}
 
-        match Operation::from(self.operation) {
-            Operation::Update => {
-                old_value = Some(Value {
-                    typed: Some(Typed::String(self.old_value.to_string())),
-                });
-            }
-            Operation::Create => {}
-            _ => panic!("unsupported operation {:?}", self.operation),
-        }
-
-        Field {
-            name: name.as_ref().to_string(),
-            new_value,
-            old_value,
-        }
+impl ToField for &DeltaString {
+    fn to_field<N: AsRef<str>>(self, name: N) -> Field {
+        delta_to_field(
+            name.as_ref(),
+            self.operation,
+            &self.old_value,
+            &self.new_value,
+        )
     }
 }
 
 // ---------- Bytes ----------
-impl ToField for Vec<u8> {
-    fn to_field<N: AsRef<str>>(&self, name: N) -> Field {
-        Field {
-            name: name.as_ref().to_string(),
-            new_value: Some(Value {
-                typed: Some(Typed::Bytes(base64::encode(self.clone()))),
-            }),
-            old_value: None,
-        }
+impl Into<Typed> for Vec<u8> {
+    fn into(self) -> Typed {
+        Into::into(&self)
+    }
+}
+
+impl Into<Typed> for &Vec<u8> {
+    fn into(self) -> Typed {
+        Typed::Bytes(base64::encode(self))
     }
 }
 
 impl ToField for DeltaBytes {
-    fn to_field<N: AsRef<str>>(&self, name: N) -> Field {
-        let new_value: Option<Value> = Some(Value {
-            typed: Some(Typed::Bytes(base64::encode(self.new_value.clone()))),
-        });
-        let mut old_value: Option<Value> = None;
+    fn to_field<N: AsRef<str>>(self, name: N) -> Field {
+        ToField::to_field(&self, name)
+    }
+}
 
-        match Operation::from(self.operation) {
-            Operation::Update => {
-                old_value = Some(Value {
-                    typed: Some(Typed::Bytes(base64::encode(self.old_value.clone()))),
-                });
-            }
-            Operation::Create => {}
-            _ => panic!("unsupported operation {:?}", self.operation),
-        }
+impl ToField for &DeltaBytes {
+    fn to_field<N: AsRef<str>>(self, name: N) -> Field {
+        delta_to_field(
+            name.as_ref(),
+            self.operation,
+            &self.old_value,
+            &self.new_value,
+        )
+    }
+}
 
-        Field {
-            name: name.as_ref().to_string(),
-            new_value,
-            old_value,
-        }
+fn delta_to_field<T: Into<Typed>>(
+    name: &str,
+    operation: Operation,
+    old_value: T,
+    new_value: T,
+) -> Field {
+    match Operation::from(operation) {
+        Operation::Update => ToField::to_field((old_value, new_value), name),
+        Operation::Create => ToField::to_field(new_value, name),
+        x => panic!("unsupported operation {:?}", x),
     }
 }
 
 // ---------- BoolChange ----------
-impl ToField for bool {
-    fn to_field<N: AsRef<str>>(&self, name: N) -> Field {
-        Field {
-            name: name.as_ref().to_string(),
-            new_value: Some(Value {
-                typed: Some(Typed::Bool(*self)),
-            }),
-            old_value: None,
-        }
+impl Into<Typed> for bool {
+    fn into(self) -> Typed {
+        Typed::Bool(self)
     }
 }
 
 impl ToField for DeltaBool {
-    fn to_field<N: AsRef<str>>(&self, name: N) -> Field {
+    fn to_field<N: AsRef<str>>(self, name: N) -> Field {
+        ToField::to_field(&self, name)
+    }
+}
+
+impl ToField for &DeltaBool {
+    fn to_field<N: AsRef<str>>(self, name: N) -> Field {
         let new_value: Option<Value> = Some(Value {
-            typed: Some(Typed::Bool(self.new_value)),
+            typed: Some(self.new_value.into()),
         });
         let mut old_value: Option<Value> = None;
 
         match Operation::from(self.operation) {
             Operation::Update => {
                 old_value = Some(Value {
-                    typed: Some(Typed::Bool(self.old_value)),
+                    typed: Some(self.old_value.into()),
                 });
             }
             Operation::Create => {}
@@ -239,24 +220,44 @@ impl ToField for DeltaBool {
 }
 
 // ---------- StringArray ----------
-impl ToField for Vec<String> {
-    fn to_field<N: AsRef<str>>(&self, name: N) -> Field {
-        Field {
-            name: name.as_ref().to_string(),
-            new_value: Some(str_vec_to_pb(self.to_vec())),
-            old_value: None,
+
+impl Into<Typed> for Vec<String> {
+    fn into(self) -> Typed {
+        Into::into(&self)
+    }
+}
+
+impl Into<Typed> for &Vec<String> {
+    fn into(self) -> Typed {
+        let mut list: Vec<Value> = vec![];
+        for item in self.iter() {
+            list.push(Value {
+                typed: Some(Typed::String(item.clone())),
+            });
         }
+
+        Typed::Array(Array { value: list })
     }
 }
 
 impl ToField for DeltaArray<String> {
-    fn to_field<N: AsRef<str>>(&self, name: N) -> Field {
-        let new_value: Option<Value> = Some(str_vec_to_pb(self.new_value.clone()));
+    fn to_field<N: AsRef<str>>(self, name: N) -> Field {
+        ToField::to_field(&self, name)
+    }
+}
+
+impl ToField for &DeltaArray<String> {
+    fn to_field<N: AsRef<str>>(self, name: N) -> Field {
+        let new_value: Option<Value> = Some(Value {
+            typed: Some((&self.new_value).into()),
+        });
         let mut old_value: Option<Value> = None;
 
         match Operation::from(self.operation) {
             Operation::Update => {
-                old_value = Some(str_vec_to_pb(self.old_value.clone()));
+                old_value = Some(Value {
+                    typed: Some((&self.old_value).into()),
+                });
             }
             Operation::Create => {}
             _ => panic!("unsupported operation {:?}", self.operation),
@@ -270,15 +271,62 @@ impl ToField for DeltaArray<String> {
     }
 }
 
-fn str_vec_to_pb(items: Vec<String>) -> Value {
-    let mut list: Vec<Value> = vec![];
-    for item in items.iter() {
-        list.push(Value {
-            typed: Some(Typed::String(item.clone())),
-        });
+impl Into<Typed> for u64 {
+    fn into(self) -> Typed {
+        Typed::String(self.to_string())
     }
-    Value {
-        typed: Some(Typed::Array(Array { value: list })),
+}
+
+impl Into<Typed> for ::prost_types::Timestamp {
+    fn into(self) -> Typed {
+        Into::into(&self)
+    }
+}
+
+impl Into<Typed> for &::prost_types::Timestamp {
+    fn into(self) -> Typed {
+        Typed::String(self.to_string())
+    }
+}
+
+impl<T: Into<Typed>> ToField for T {
+    fn to_field<N: AsRef<str>>(self, name: N) -> Field {
+        Field {
+            name: name.as_ref().to_string(),
+            old_value: None,
+            new_value: Some(Value {
+                typed: Some(self.into()),
+            }),
+        }
+    }
+}
+
+impl<T: Into<Typed>> ToField for (T, T) {
+    fn to_field<N: AsRef<str>>(self, name: N) -> Field {
+        Field {
+            name: name.as_ref().to_string(),
+            old_value: Some(Value {
+                typed: Some(self.0.into()),
+            }),
+            new_value: Some(Value {
+                typed: Some(self.1.into()),
+            }),
+        }
+    }
+}
+
+impl<T: Into<Typed>> ToField for (T, Option<T>) {
+    fn to_field<N: AsRef<str>>(self, name: N) -> Field {
+        match self.1 {
+            Some(x) => ToField::to_field((self.0, x), name),
+            None => Field {
+                name: name.as_ref().to_string(),
+                old_value: Some(Value {
+                    typed: Some(self.0.into()),
+                }),
+                new_value: None,
+            },
+        }
     }
 }
 
