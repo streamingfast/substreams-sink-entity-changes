@@ -273,7 +273,7 @@ impl ToField for &DeltaArray<String> {
 
 impl Into<Typed> for u64 {
     fn into(self) -> Typed {
-        Typed::String(self.to_string())
+        Typed::Bigint(self.to_string())
     }
 }
 
