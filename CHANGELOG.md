@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Next
 
+* Added support for `u64` converted to `Typed::Bigint`.
+
+* Added possibility to record a `change` using `new: Into<Typed>` to simulate a value creation.
+
+* Added possibility to record a `change` using `(old: Into<Typed>, new: Option<Into<Typed>>)` to simulate a value deletion.
+
+* Added possibility to record a `change` using `(old: Into<Typed>, new: Into<Typed>)`.
+
+* Refactored to allow delta to be taken from any `Into<Typed>` which makes it much easier to extend when there is missing types.
+
+* Refactored to reduce amount of `clone` perform.
+
 * Add `f64` and `i64` and there respective Deltas to be converted to `BigDecimal` and `BigInt`
 
 ## [0.2.0](https://github.com/streamingfast/substreams-entity-change/releases/tag/v0.2.0)
