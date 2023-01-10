@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package substreams.entity.v1;
+package sf.substreams.entity.v1;
 
 message EntityChanges {
   repeated EntityChange entity_changes = 5;

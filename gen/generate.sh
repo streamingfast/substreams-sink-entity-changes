@@ -16,9 +16,12 @@
 ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd ../ && pwd )"
 GEN_FILE="$ROOT/gen/last_generate.txt"
 
+/Users/colindickson/code/dfuse/substreams-entity-change/substreams-entity-change/src
+
+
 # Protobuf definitions
 PROTO=${2:-"$ROOT/proto"}
-PROTO_OUT="$ROOT/src/pb"
+PROTO_OUT="$ROOT/substreams-entity-change/src/pb"
 
 function main() {
   checks
