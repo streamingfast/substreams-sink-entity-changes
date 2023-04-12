@@ -15,6 +15,7 @@ message EntityChange {
     CREATE = 1;
     UPDATE = 2;
     DELETE = 3;
+    FINAL = 4;
   }
   Operation operation = 4;
   repeated Field fields = 5;
