@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 package sf.substreams.entity.v1;
+option go_package = "github.com/streamingfast/substreams-entity-change/pb;pbentity";
 
 message EntityChanges {
   repeated EntityChange entity_changes = 5;
