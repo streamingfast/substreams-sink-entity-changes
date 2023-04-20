@@ -10,6 +10,7 @@ message EntityChanges {
 message EntityChange {
   string entity = 1;
   string id = 2;
+  // Deprecated, this is not used within `graph-node`.
   uint64 ordinal = 3;
   enum Operation {
     UNSET = 0;    // Protobuf default should not be used, this is used so that the consume can ensure that the value was actually specified
@@ -44,5 +45,6 @@ message Array {
 message Field {
   string name = 1;
   optional Value new_value = 3;
+  // Deprecated, this is not used within `graph-node`.
   optional Value old_value = 5;
 }
