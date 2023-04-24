@@ -23,6 +23,11 @@ message EntityChange {
   repeated Field fields = 5;
 }
 
+message EntityChangeAtBlockNum {
+    EntityChange entity_change = 1;
+    uint64 block_num = 2;
+}
+
 message Value {
   oneof typed {
     int32 int32 = 1;
