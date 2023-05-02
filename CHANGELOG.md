@@ -15,8 +15,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 * Added `FINAL` to `sf.substreams.entity.v1.EntityChange#Operation` enum list.
 
-* Added `sf.substreams.entity.v1.EntityChangeAtBlockNum` message.
-
 ## [1.0.0]
 
 * **BREAKING** Changed database proto package path from ~~substreams.entity.v1~~ to `sf.substreams.entity.v1`
