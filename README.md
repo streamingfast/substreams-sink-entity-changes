@@ -1,27 +1,21 @@
 # Substreams Entity Change
 
-> Developer preview
+`substreams-entity-change` crate contains all the definitions for the entity changes which can be emitted by a Substreams and can then be ingested by `graph-node`.
 
-`substreams-entity-change` crate contains all the definitions for the entity changes which can be emitted by a substream.
+## Usage
 
-## Build proto manually
+We don't have proper documentation yet for this module. The best place to understand how to use it is to look at existing Substreams that emits EntityChanges to be consumed by `graph-node`.
 
-### Install protoc
+Substreams:
+- [substreams-eth-block-meta](https://github.com/streamingfast/substreams-eth-block-meta) (see [graph_out module](https://github.com/streamingfast/substreams-eth-block-meta/blob/master/src/lib.rs#L62) and its accompanying helper file [graph_out.rs](https://github.com/streamingfast/substreams-eth-block-meta/blob/master/src/graph_out.rs#L6))
+- [substreams-uniswap-v3](https://github.com/streamingfast/substreams-uniswap-v3) (see [graph_out module](https://github.com/streamingfast/substreams-uniswap-v3/blob/bc2dc1d88d3e7297b15f67bb4cdb81702396f4f7/src/lib.rs#L1305) and its accompanying helper file [db.rs](https://github.com/streamingfast/substreams-uniswap-v3/blob/develop/src/db.rs))
 
-To be able to build proto files manually using the command line, you have to have protoc installed on your machine. Visit [here](https://grpc.io/docs/protoc-installation/) to install.
+### Contributing
 
-For Linux, using apt
-```bash
-apt install -y protobuf-compiler
-protoc --version  # Ensure compiler version is 3+
-```
+#### Re-generate Protobuf definitions
 
-For macOS, using Homebrew
-```bash
-brew install protobuf
-protoc --version  # Ensure compiler version is 3+
-```
+Install [buf CLI](https://buf.build/product/cli/) and run [./proto/generate.sh](./proto/generate.sh) file.
 
-Instead of having a `build.rs` file which will build the proto automatically on every `cargo build --release` you have to build the proto files manually.
+#### Release
 
-Simply run `./gen/generate.sh`
+See [RELEASE.md](./RELEASE.md) for release process.
