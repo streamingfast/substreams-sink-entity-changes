@@ -15,6 +15,8 @@ You will need [sfreleaser](https://github.com/streamingfast/sfreleaser) (install
   sd '## Unreleased' "## ${version}" CHANGELOG.md
   ```
 
+- Perform a `cargo check` so that `Cargo.lock` is properly updated.
+
 - Commit everything with message `Preparing release of ${version}`.
 
   ```bash
