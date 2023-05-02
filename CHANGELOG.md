@@ -8,7 +8,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 * **BREAKING** Changed database proto package path from ~~substreams.entity.v1~~ to `sf.substreams.entity.v1`
 
-
 ## [0.3.0](https://github.com/streamingfast/substreams-entity-change/releases/tag/v0.3.0)
 
 * Bump `substreams` library to `0.5.0`

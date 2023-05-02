@@ -10,6 +10,6 @@ package:
 
 protobuf:
   files:
-    - entity/v1/entity.proto
+    - sf/substreams/entity/v1/entity.proto
   importPaths:
     - ./proto
