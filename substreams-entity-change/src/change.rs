@@ -103,6 +103,110 @@ impl ToField for &DeltaBigInt {
     }
 }
 
+// ---------- BigDecimalArray ----------
+
+impl Into<Typed> for Vec<BigDecimal> {
+    fn into(self) -> Typed {
+        Into::into(&self)
+    }
+}
+
+impl Into<Typed> for &Vec<BigDecimal> {
+    fn into(self) -> Typed {
+        let mut list: Vec<Value> = vec![];
+        for item in self.iter() {
+            list.push(Value {
+                typed: Some(Typed::Bigdecimal(item.to_string())),
+            });
+        }
+
+        Typed::Array(Array { value: list })
+    }
+}
+
+impl ToField for DeltaArray<BigDecimal> {
+    fn to_field<N: AsRef<str>>(self, name: N) -> Field {
+        ToField::to_field(&self, name)
+    }
+}
+
+impl ToField for &DeltaArray<BigDecimal> {
+    fn to_field<N: AsRef<str>>(self, name: N) -> Field {
+        let new_value: Option<Value> = Some(Value {
+            typed: Some((&self.new_value).into()),
+        });
+        let mut old_value: Option<Value> = None;
+
+        match Operation::from(self.operation) {
+            Operation::Update => {
+                old_value = Some(Value {
+                    typed: Some((&self.old_value).into()),
+                });
+            }
+            Operation::Create => {}
+            _ => panic!("unsupported operation {:?}", self.operation),
+        }
+
+        Field {
+            name: name.as_ref().to_string(),
+            new_value,
+            old_value,
+        }
+    }
+}
+
+// ---------- BigIntArray ----------
+
+impl Into<Typed> for Vec<BigInt> {
+    fn into(self) -> Typed {
+        Into::into(&self)
+    }
+}
+
+impl Into<Typed> for &Vec<BigInt> {
+    fn into(self) -> Typed {
+        let mut list: Vec<Value> = vec![];
+        for item in self.iter() {
+            list.push(Value {
+                typed: Some(Typed::Bigint(item.to_string())),
+            });
+        }
+
+        Typed::Array(Array { value: list })
+    }
+}
+
+impl ToField for DeltaArray<BigInt> {
+    fn to_field<N: AsRef<str>>(self, name: N) -> Field {
+        ToField::to_field(&self, name)
+    }
+}
+
+impl ToField for &DeltaArray<BigInt> {
+    fn to_field<N: AsRef<str>>(self, name: N) -> Field {
+        let new_value: Option<Value> = Some(Value {
+            typed: Some((&self.new_value).into()),
+        });
+        let mut old_value: Option<Value> = None;
+
+        match Operation::from(self.operation) {
+            Operation::Update => {
+                old_value = Some(Value {
+                    typed: Some((&self.old_value).into()),
+                });
+            }
+            Operation::Create => {}
+            _ => panic!("unsupported operation {:?}", self.operation),
+        }
+
+        Field {
+            name: name.as_ref().to_string(),
+            new_value,
+            old_value,
+        }
+    }
+}
+
 // ---------- String ----------
 impl Into<Typed> for String {
     fn into(self) -> Typed {
@@ -165,6 +269,57 @@ impl ToField for &DeltaBytes {
             &self.old_value,
             &self.new_value,
         )
+    }
+}
+
+// ---------- ByteArray ----------
+impl Into<Typed> for Vec<Vec<u8>> {
+    fn into(self) -> Typed {
+        Into::into(&self)
+    }
+}
+
+impl Into<Typed> for &Vec<Vec<u8>> {
+    fn into(self) -> Typed {
+        let mut list: Vec<Value> = vec![];
+        for item in self.iter() {
+            list.push(Value {
+                typed: Some(Typed::Bytes(base64::encode(item))),
+            });
+        }
+
+        Typed::Array(Array { value: list })
+    }
+}
+
+impl ToField for DeltaArray<Vec<u8>> {
+    fn to_field<N: AsRef<str>>(self, name: N) -> Field {
+        ToField::to_field(&self, name)
+    }
+}
+
+impl ToField for &DeltaArray<Vec<u8>> {
+    fn to_field<N: AsRef<str>>(self, name: N) -> Field {
+        let new_value: Option<Value> = Some(Value {
+            typed: Some((&self.new_value).into()),
+        });
+        let mut old_value: Option<Value> = None;
+
+        match Operation::from(self.operation) {
+            Operation::Update => {
+                old_value = Some(Value {
+                    typed: Some((&self.old_value).into()),
+                });
+            }
+            Operation::Create => {}
+            _ => panic!("unsupported operation {:?}", self.operation),
+        }
+
+        Field {
+            name: name.as_ref().to_string(),
+            new_value,
+            old_value,
+        }
     }
 }
 
@@ -469,6 +624,66 @@ mod test {
     }
 
     #[test]
+    fn vec_byte_array_change() {
+        let vec_byte_array_change: Vec<Vec<u8>> = vec![vec![1, 2, 3], vec![4, 5, 6]];
+        assert_eq!(
+            create_expected_field(
+                FIELD_NAME,
+                None,
+                Some(Typed::Array(Array {
+                    value: vec![
+                        Value {
+                            typed: Some(Typed::Bytes("AQID".to_string()))
+                        },
+                        Value {
+                            typed: Some(Typed::Bytes("BAUG".to_string()))
+                        },
+                    ]
+                }))
+            ),
+            vec_byte_array_change.to_field(FIELD_NAME)
+        );
+    }
+
+    #[test]
+    fn delta_vec_byte_array_change() {
+        let delta = DeltaArray {
+            operation: Operation::Update,
+            ordinal: 0,
+            key: "change".to_string(),
+            old_value: vec![vec![1, 2, 3], vec![4, 5, 6]],
+            new_value: vec![vec![7, 8, 9], vec![10, 11, 12]],
+        };
+
+        assert_eq!(
+            create_expected_field(
+                FIELD_NAME,
+                Some(Typed::Array(Array {
+                    value: vec![
+                        Value {
+                            typed: Some(Typed::Bytes("AQID".to_string()))
+                        },
+                        Value {
+                            typed: Some(Typed::Bytes("BAUG".to_string()))
+                        },
+                    ]
+                })),
+                Some(Typed::Array(Array {
+                    value: vec![
+                        Value {
+                            typed: Some(Typed::Bytes("BwgJ".to_string()))
+                        },
+                        Value {
+                            typed: Some(Typed::Bytes("CgsM".to_string()))
+                        },
+                    ]
+                })),
+            ),
+            delta.to_field(FIELD_NAME)
+        );
+    }
+
+    #[test]
     fn bool_change() {
         let bool_change = true;
         assert_eq!(
@@ -570,6 +785,168 @@ mod test {
                         },
                         Value {
                             typed: Some(Typed::String("string3.1".to_string()))
+                        },
+                    ]
+                })),
+            ),
+            delta.to_field(FIELD_NAME)
+        );
+    }
+
+    #[test]
+    fn vec_big_decimal_change() {
+        let vec_big_decimal_change: Vec<BigDecimal> = vec![
+            BigDecimal::from(1),
+            BigDecimal::from(2),
+            BigDecimal::from(3),
+        ];
+        assert_eq!(
+            create_expected_field(
+                FIELD_NAME,
+                None,
+                Some(Typed::Array(Array {
+                    value: vec![
+                        Value {
+                            typed: Some(Typed::Bigdecimal("1".to_string()))
+                        },
+                        Value {
+                            typed: Some(Typed::Bigdecimal("2".to_string()))
+                        },
+                        Value {
+                            typed: Some(Typed::Bigdecimal("3".to_string()))
+                        },
+                    ]
+                }))
+            ),
+            vec_big_decimal_change.to_field(FIELD_NAME)
+        );
+    }
+
+    #[test]
+    fn delta_vec_big_decimal_change() {
+        let delta = DeltaArray {
+            operation: Operation::Update,
+            ordinal: 0,
+            key: "change".to_string(),
+            old_value: vec![
+                BigDecimal::from(1),
+                BigDecimal::from(2),
+                BigDecimal::from(3),
+            ],
+            new_value: vec![
+                BigDecimal::from(11),
+                BigDecimal::from(22),
+                BigDecimal::from(33),
+            ],
+        };
+
+        assert_eq!(
+            create_expected_field(
+                FIELD_NAME,
+                Some(Typed::Array(Array {
+                    value: vec![
+                        Value {
+                            typed: Some(Typed::Bigdecimal("1".to_string()))
+                        },
+                        Value {
+                            typed: Some(Typed::Bigdecimal("2".to_string()))
+                        },
+                        Value {
+                            typed: Some(Typed::Bigdecimal("3".to_string()))
+                        },
+                    ]
+                })),
+                Some(Typed::Array(Array {
+                    value: vec![
+                        Value {
+                            typed: Some(Typed::Bigdecimal("11".to_string()))
+                        },
+                        Value {
+                            typed: Some(Typed::Bigdecimal("22".to_string()))
+                        },
+                        Value {
+                            typed: Some(Typed::Bigdecimal("33".to_string()))
+                        },
+                    ]
+                })),
+            ),
+            delta.to_field(FIELD_NAME)
+        );
+    }
+
+    #[test]
+    fn vec_big_int_change() {
+        let vec_big_int_change: Vec<BigInt> = vec![
+            BigInt::from(1),
+            BigInt::from(2),
+            BigInt::from(3),
+        ];
+        assert_eq!(
+            create_expected_field(
+                FIELD_NAME,
+                None,
+                Some(Typed::Array(Array {
+                    value: vec![
+                        Value {
+                            typed: Some(Typed::Bigint("1".to_string()))
+                        },
+                        Value {
+                            typed: Some(Typed::Bigint("2".to_string()))
+                        },
+                        Value {
+                            typed: Some(Typed::Bigint("3".to_string()))
+                        },
+                    ]
+                }))
+            ),
+            vec_big_int_change.to_field(FIELD_NAME)
+        );
+    }
+
+    #[test]
+    fn delta_vec_big_int_change() {
+        let delta = DeltaArray {
+            operation: Operation::Update,
+            ordinal: 0,
+            key: "change".to_string(),
+            old_value: vec![
+                BigInt::from(1),
+                BigInt::from(2),
+                BigInt::from(3),
+            ],
+            new_value: vec![
+                BigInt::from(11),
+                BigInt::from(22),
+                BigInt::from(33),
+            ],
+        };
+
+        assert_eq!(
+            create_expected_field(
+                FIELD_NAME,
+                Some(Typed::Array(Array {
+                    value: vec![
+                        Value {
+                            typed: Some(Typed::Bigint("1".to_string()))
+                        },
+                        Value {
+                            typed: Some(Typed::Bigint("2".to_string()))
+                        },
+                        Value {
+                            typed: Some(Typed::Bigint("3".to_string()))
+                        },
+                    ]
+                })),
+                Some(Typed::Array(Array {
+                    value: vec![
+                        Value {
+                            typed: Some(Typed::Bigint("11".to_string()))
+                        },
+                        Value {
+                            typed: Some(Typed::Bigint("22".to_string()))
+                        },
+                        Value {
+                            typed: Some(Typed::Bigint("33".to_string()))
                         },
                     ]
                 })),
