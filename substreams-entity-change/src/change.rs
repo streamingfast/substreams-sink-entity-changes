@@ -210,13 +210,15 @@ impl ToField for &DeltaArray<BigInt> {
 // ---------- String ----------
 impl Into<Typed> for String {
     fn into(self) -> Typed {
-        Typed::String(self)
+        let string = clean_invalid_string_sequence(self.clone());
+        Typed::String(string)
     }
 }
 
 impl Into<Typed> for &String {
     fn into(self) -> Typed {
-        Typed::String(self.clone())
+        let string = clean_invalid_string_sequence(self.clone());
+        Typed::String(string)
     }
 }
 
@@ -375,7 +377,6 @@ impl ToField for &DeltaBool {
 }
 
 // ---------- StringArray ----------
-
 impl Into<Typed> for Vec<String> {
     fn into(self) -> Typed {
         Into::into(&self)
@@ -386,8 +387,9 @@ impl Into<Typed> for &Vec<String> {
     fn into(self) -> Typed {
         let mut list: Vec<Value> = vec![];
         for item in self.iter() {
+            let string = clean_invalid_string_sequence(item.clone());
             list.push(Value {
-                typed: Some(Typed::String(item.clone())),
+                typed: Some(Typed::String(string)),
             });
         }
 
@@ -485,6 +487,17 @@ impl<T: Into<Typed>> ToField for (T, Option<T>) {
     }
 }
 
+fn clean_invalid_string_sequence(invalid_string: String) -> String {
+    let mut string = invalid_string;
+
+    // Strip null characters since they are not accepted by Postgres.
+    if string.contains('\u{0000}') {
+        string = string.replace('\u{0000}', "");
+    }
+
+    string
+}
+
 #[cfg(test)]
 mod test {
     use crate::change::ToField;
@@ -575,6 +588,16 @@ mod test {
     }
 
     #[test]
+    fn string_invalid_0x00_bytes_sequence_change() {
+        let string_change = String::from('\u{0000}');
+
+        assert_eq!(
+            create_expected_field(FIELD_NAME, None, Some(Typed::String("".to_string()))),
+            string_change.to_field(FIELD_NAME)
+        );
+    }
+
+    #[test]
     fn delta_string_change() {
         let delta = DeltaString {
             operation: Operation::Update,
@@ -589,6 +612,26 @@ mod test {
                 FIELD_NAME,
                 Some(Typed::String("string1".to_string())),
                 Some(Typed::String("string2".to_string()))
+            ),
+            delta.to_field(FIELD_NAME)
+        );
+    }
+
+    #[test]
+    fn delta_string_invalid_0x00_bytes_sequence_change() {
+        let delta = DeltaString {
+            operation: Operation::Update,
+            ordinal: 0,
+            key: "change".to_string(),
+            old_value: String::from("string1"),
+            new_value: String::from('\u{0000}'),
+        };
+
+        assert_eq!(
+            create_expected_field(
+                FIELD_NAME,
+                Some(Typed::String("string1".to_string())),
+                Some(Typed::String("".to_string()))
             ),
             delta.to_field(FIELD_NAME)
         );
@@ -742,6 +785,35 @@ mod test {
     }
 
     #[test]
+    fn vec_string_invalid_0x00_sequence_change() {
+        let vec_string_change: Vec<String> = vec![
+            String::from("string1"),
+            String::from("string2"),
+            String::from('\u{0000}'),
+        ];
+        assert_eq!(
+            create_expected_field(
+                FIELD_NAME,
+                None,
+                Some(Typed::Array(Array {
+                    value: vec![
+                        Value {
+                            typed: Some(Typed::String("string1".to_string()))
+                        },
+                        Value {
+                            typed: Some(Typed::String("string2".to_string()))
+                        },
+                        Value {
+                            typed: Some(Typed::String("".to_string()))
+                        },
+                    ]
+                }))
+            ),
+            vec_string_change.to_field(FIELD_NAME)
+        );
+    }
+
+    #[test]
     fn delta_vec_string_change() {
         let delta = DeltaArray {
             operation: Operation::Update,
@@ -785,6 +857,58 @@ mod test {
                         },
                         Value {
                             typed: Some(Typed::String("string3.1".to_string()))
+                        },
+                    ]
+                })),
+            ),
+            delta.to_field(FIELD_NAME)
+        );
+    }
+
+    #[test]
+    fn delta_vec_string_invalid_0x00_sequence_change() {
+        let delta = DeltaArray {
+            operation: Operation::Update,
+            ordinal: 0,
+            key: "change".to_string(),
+            old_value: vec![
+                "string1".to_string(),
+                "string2".to_string(),
+                "string3".to_string(),
+            ],
+            new_value: vec![
+                "string1.1".to_string(),
+                String::from("string2.1"),
+                String::from('\u{0000}'),
+            ],
+        };
+
+        assert_eq!(
+            create_expected_field(
+                FIELD_NAME,
+                Some(Typed::Array(Array {
+                    value: vec![
+                        Value {
+                            typed: Some(Typed::String("string1".to_string()))
+                        },
+                        Value {
+                            typed: Some(Typed::String("string2".to_string()))
+                        },
+                        Value {
+                            typed: Some(Typed::String("string3".to_string()))
+                        },
+                    ]
+                })),
+                Some(Typed::Array(Array {
+                    value: vec![
+                        Value {
+                            typed: Some(Typed::String("string1.1".to_string()))
+                        },
+                        Value {
+                            typed: Some(Typed::String("string2.1".to_string()))
+                        },
+                        Value {
+                            typed: Some(Typed::String("".to_string()))
                         },
                     ]
                 })),
@@ -876,11 +1000,8 @@ mod test {
 
     #[test]
     fn vec_big_int_change() {
-        let vec_big_int_change: Vec<BigInt> = vec![
-            BigInt::from(1),
-            BigInt::from(2),
-            BigInt::from(3),
-        ];
+        let vec_big_int_change: Vec<BigInt> =
+            vec![BigInt::from(1), BigInt::from(2), BigInt::from(3)];
         assert_eq!(
             create_expected_field(
                 FIELD_NAME,
@@ -909,16 +1030,8 @@ mod test {
             operation: Operation::Update,
             ordinal: 0,
             key: "change".to_string(),
-            old_value: vec![
-                BigInt::from(1),
-                BigInt::from(2),
-                BigInt::from(3),
-            ],
-            new_value: vec![
-                BigInt::from(11),
-                BigInt::from(22),
-                BigInt::from(33),
-            ],
+            old_value: vec![BigInt::from(1), BigInt::from(2), BigInt::from(3)],
+            new_value: vec![BigInt::from(11), BigInt::from(22), BigInt::from(33)],
         };
 
         assert_eq!(

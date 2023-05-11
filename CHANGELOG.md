@@ -4,6 +4,9 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Next
+
+* Added clean invalid string byte sequence when using a `String`, `&String`, `Delta<String>`, `Delta<&String>`, `Vec<String>`, `&Vec<String>`, `DeltaArray<String>` and `&DeltaArray<String>` 
 
 ## [1.1.1]
 
@@ -20,7 +23,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 * Added `FINAL` to `sf.substreams.entity.v1.EntityChange#Operation` enum list.
 
-## [1.0.0]
+## [1.0.1](https://github.com/streamingfast/substreams-entity-change/releases/tag/v1.0.1)
+* Adding `FINAL` entity change operation
+
+## [1.0.0](https://github.com/streamingfast/substreams-entity-change/releases/tag/v1.0.0)
 
 * **BREAKING** Changed database proto package path from ~~substreams.entity.v1~~ to `sf.substreams.entity.v1`
 
