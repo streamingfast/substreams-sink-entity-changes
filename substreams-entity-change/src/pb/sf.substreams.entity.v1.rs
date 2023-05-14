@@ -61,14 +61,6 @@ pub mod entity_change {
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct EntityChangeAtBlockNum {
-    #[prost(message, optional, tag="1")]
-    pub entity_change: ::core::option::Option<EntityChange>,
-    #[prost(uint64, tag="2")]
-    pub block_num: u64,
-}
-#[allow(clippy::derive_partial_eq_without_eq)]
-#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Value {
     #[prost(oneof="value::Typed", tags="1, 2, 3, 4, 5, 6, 10")]
     pub typed: ::core::option::Option<value::Typed>,
