@@ -98,27 +98,41 @@ impl Tables {
     }
 
     // Convert Tables into an EntityChanges protobuf object
-    pub fn to_entity_changes(mut self) -> EntityChanges {
+    pub fn to_entity_changes(self) -> EntityChanges {
         let mut entities = EntityChanges::default();
-        for (table, rows) in self.tables.iter_mut() {
-            for (pk, row) in rows.pks.iter_mut() {
+        for (table, rows) in self.tables.into_iter() {
+            for (pk, row) in rows.pks.into_iter() {
                 if row.operation == Operation::Unset {
                     continue;
                 }
+
+                // Doing it right now removes the need to perform a `pk.clone()` when creating the real change
+                // below. We assume finalized row happen much less often than standard, so we save a bunch of
+                // clone by eagerly creating the finalized row here.
+                let mut pk_finalized: Option<EntityChange> = None;
+                if row.finalized {
+                    pk_finalized = Some(EntityChange::new(
+                        table.clone(),
+                        pk.clone(),
+                        0,
+                        Operation::Final,
+                    ))
+                }
+
                 // Map the row.operation into an EntityChange.Operation
-                let mut change = EntityChange::new(table, pk, 0, row.operation);
-                for (field, value) in row.columns.iter_mut() {
+                let mut change = EntityChange::new(table.clone(), pk, 0, row.operation);
+                for (field, value) in row.columns.into_iter() {
                     change.fields.push(Field {
-                        name: field.clone(),
-                        new_value: Some(value.clone()),
+                        name: field,
+                        new_value: Some(value),
                         old_value: None,
                     });
                 }
-                entities.entity_changes.push(change.clone());
-                if row.finalized {
-                    entities
-                        .entity_changes
-                        .push(EntityChange::new(table, pk, 0, Operation::Final));
+
+                entities.entity_changes.push(change);
+
+                if let Some(finalized_row) = pk_finalized {
+                    entities.entity_changes.push(finalized_row);
                 }
             }
         }
