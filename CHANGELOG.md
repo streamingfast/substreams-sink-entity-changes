@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.2]
+
+* Added more conversion for `ToValue` defined for `tables::Tables`.
+
+  > **Note** Added possibility to move some value in their final destination. So if you don't need the value when doing `.set(...)` calls in `Tables`, moving the value instead of passing it by reference (`.set(..., &value)`) for `String` and `Vec<String>` will lead to small speed improvements.
+
 ## [1.2.1]
 
 * Speed up `tables::Tables#to_entity_changes` by removing multiple `clone` that were not required.
@@ -29,7 +35,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
     .set("totalValueLockedETH", &bigdecimal0)
     .set("totalValueLockedUSDUntracked", &bigdecimal0)
     .set("totalValueLockedETHUntracked", &bigdecimal0)
-    .set("owner", &format!("0x{}", Hex(utils::ZERO_ADDRESS).to_string()));
+    .set("owner", format!("0x{}", Hex(utils::ZERO_ADDRESS).to_string()));
 
   // Update a row (<entity_name>, <id>).[set(<column>, <value>), ...]
   tables

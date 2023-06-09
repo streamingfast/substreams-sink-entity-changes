@@ -1,3 +1,58 @@
+/// Tables is a collection of rows, which is a collection of columns and make it easy to build
+/// up EntityChanges protobuf objects.
+///
+/// ```rust
+///  use substreams::{scalar::{BigInt, BigDecimal}, Hex};
+///  use substreams_entity_change::tables::Tables;
+///
+///  let mut tables = Tables::new();
+///  let bigint0 = BigInt::from(0);
+///  let bigdecimal0 = BigDecimal::from(0);
+///
+///  tables
+///    .create_row("Factory", "0x0000000")
+///    .set("poolCount", &bigint0)
+///    .set("txCount", &bigint0)
+///    .set("totalVolumeUSD", &bigdecimal0)
+///    .set("totalVolumeETH", &bigdecimal0)
+///    .set("totalFeesUSD", &bigdecimal0)
+///    .set("totalFeesETH", &bigdecimal0)
+///    .set("untrackedVolumeUSD", &bigdecimal0)
+///    .set("totalValueLockedUSD", &bigdecimal0)
+///    .set("totalValueLockedETH", &bigdecimal0)
+///    .set("totalValueLockedUSDUntracked", &bigdecimal0)
+///    .set("totalValueLockedETHUntracked", &bigdecimal0)
+///    .set("owner", "0x0000000000000000000000000000000000000000");
+/// ```
+///
+/// In the code above, we create a new row in the `Factory` table with the primary key `0x0000000`
+/// and set the fields for the entity.
+///
+/// Later to update the row, we can do:
+///
+/// ```rust
+///  use substreams::{scalar::{BigInt, BigDecimal}, Hex};
+///  use substreams_entity_change::tables::Tables;
+///
+///  let mut tables = Tables::new();
+///  let new_count = BigInt::from(1);
+///
+///  tables
+///    .update_row("Factory", "0x0000000")
+///    .set("txCount", new_count);
+/// ```
+///
+/// When you have populated the table changes, you can convert them into an EntityChanges protobuf
+/// so that the Graph Node Substreams Sink can ingest your data correctly:
+///
+/// ```rust
+///  use substreams_entity_change::tables::Tables;
+///
+/// let mut tables = Tables::new();
+/// // ... populate tables
+/// let changes = tables.to_entity_changes();
+/// ```
+///
 use crate::pb::entity::entity_change::Operation;
 use crate::pb::entity::value::Typed;
 use crate::pb::entity::{Array, EntityChange, EntityChanges, Field, Value};
@@ -173,7 +228,6 @@ impl Row {
         }
     }
 
-    // TODO: add set_bigint, set_bigdecimal which both take a bi/bd string representation
     pub fn set<T: ToValue>(&mut self, name: &str, value: T) -> &mut Self {
         if self.operation == Operation::Delete {
             panic!("cannot set fields on a delete operation")
@@ -217,11 +271,11 @@ impl Row {
 }
 
 pub trait ToValue {
-    fn to_value(&self) -> Value;
+    fn to_value(self) -> Value;
 }
 
-impl ToValue for bool {
-    fn to_value(&self) -> Value {
+impl ToValue for &bool {
+    fn to_value(self) -> Value {
         Value {
             typed: Some(Typed::Bool(*self)),
         }
@@ -229,104 +283,121 @@ impl ToValue for bool {
 }
 
 impl ToValue for &BigDecimal {
-    fn to_value(&self) -> Value {
+    fn to_value(self) -> Value {
         Value {
             typed: Some(Typed::Bigdecimal(self.to_string())),
         }
     }
 }
 
-impl ToValue for BigDecimal {
-    fn to_value(&self) -> Value {
+impl ToValue for &str {
+    fn to_value(self) -> Value {
         Value {
-            typed: Some(Typed::Bigdecimal(self.to_string())),
-        }
-    }
-}
-
-impl ToValue for &BigInt {
-    fn to_value(&self) -> Value {
-        Value {
-            typed: Some(Typed::Bigint(self.to_string())),
-        }
-    }
-}
-
-impl ToValue for BigInt {
-    fn to_value(&self) -> Value {
-        Value {
-            typed: Some(Typed::Bigint(self.to_string())),
+            typed: Some(Typed::String(self.to_string())),
         }
     }
 }
 
 impl ToValue for &String {
-    fn to_value(&self) -> Value {
+    fn to_value(self) -> Value {
         Value {
-            typed: Some(Typed::String(self.to_string())),
+            typed: Some(Typed::String(self.clone())),
         }
     }
 }
 
 impl ToValue for String {
-    fn to_value(&self) -> Value {
+    fn to_value(self) -> Value {
         Value {
-            typed: Some(Typed::String(self.to_string())),
+            typed: Some(Typed::String(self)),
         }
     }
 }
 
 impl ToValue for &Vec<u8> {
-    fn to_value(&self) -> Value {
+    fn to_value(self) -> Value {
         Value {
             typed: Some(Typed::Bytes(base64::encode(self))),
         }
     }
 }
 
+impl ToValue for Vec<String> {
+    fn to_value(self) -> Value {
+        Value {
+            typed: Some(Typed::Array(Array {
+                value: self.into_iter().map(ToValue::to_value).collect(),
+            })),
+        }
+    }
+}
+
 impl ToValue for &Vec<String> {
-    fn to_value(&self) -> Value {
-        let mut list: Vec<Value> = vec![];
-        for item in self.iter() {
-            list.push(Value {
-                typed: Some(Typed::String(item.clone())),
-            });
-        }
-
+    fn to_value(self) -> Value {
         Value {
-            typed: Some(Typed::Array(Array { value: list })),
+            typed: Some(Typed::Array(Array {
+                value: self.iter().map(ToValue::to_value).collect(),
+            })),
         }
     }
 }
 
-impl ToValue for u64 {
-    fn to_value(&self) -> Value {
+impl ToValue for &::prost_types::Timestamp {
+    fn to_value(self) -> Value {
         Value {
-            typed: Some(Typed::Bigint(self.to_string())),
+            typed: Some(Typed::String(self.to_string())),
         }
     }
 }
 
-impl ToValue for u32 {
-    fn to_value(&self) -> Value {
-        Value {
-            typed: Some(Typed::Bigint(self.to_string())),
+macro_rules! impl_to_database_value_proxy_to_ref {
+    ($name:ty) => {
+        impl ToValue for $name {
+            fn to_value(self) -> Value {
+                ToValue::to_value(&self)
+            }
         }
-    }
+    };
 }
 
-impl ToValue for i64 {
-    fn to_value(&self) -> Value {
-        Value {
-            typed: Some(Typed::Bigint(self.to_string())),
+// Those owns the received value (so once called, the value is dropped)
+impl_to_database_value_proxy_to_ref!(bool);
+impl_to_database_value_proxy_to_ref!(BigDecimal);
+impl_to_database_value_proxy_to_ref!(Vec<u8>);
+impl_to_database_value_proxy_to_ref!(::prost_types::Timestamp);
+
+macro_rules! impl_to_bigint_value_proxy_to_string {
+    ($name:ty) => {
+        impl ToValue for $name {
+            fn to_value(self) -> Value {
+                Value {
+                    typed: Some(Typed::Bigint(self.to_string())),
+                }
+            }
         }
-    }
+    };
 }
 
-impl ToValue for i32 {
-    fn to_value(&self) -> Value {
-        Value {
-            typed: Some(Typed::Int32(*self)),
+impl_to_bigint_value_proxy_to_string!(i64);
+impl_to_bigint_value_proxy_to_string!(u8);
+impl_to_bigint_value_proxy_to_string!(u16);
+impl_to_bigint_value_proxy_to_string!(u32);
+impl_to_bigint_value_proxy_to_string!(u64);
+impl_to_bigint_value_proxy_to_string!(BigInt);
+impl_to_bigint_value_proxy_to_string!(&BigInt);
+
+macro_rules! impl_to_int32_value {
+    ($name:ty) => {
+        impl ToValue for $name {
+            fn to_value(self) -> Value {
+                Value {
+                    typed: Some(Typed::Int32(self as i32)),
+                }
+            }
         }
-    }
+    };
 }
+
+impl_to_int32_value!(i8);
+impl_to_int32_value!(i16);
+impl_to_int32_value!(i32);
