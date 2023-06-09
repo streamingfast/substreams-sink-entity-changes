@@ -6,11 +6,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## Next
 
-* Added clean invalid string byte sequence when using a `String`, `&String`, `Delta<String>`, `Delta<&String>`, `Vec<String>`, `&Vec<String>`, `DeltaArray<String>` and `&DeltaArray<String>` 
+* Added `tables` module so that you can use it as a better abstraction to build up your entity changes.
+
+  ```rust
+  let mut tables = Tables::new();
+
+  // Create a row (<entity_name>, <id>).[set(<column>, <value>), ...]
+  tables
+    .create_row("Factory", id)
+    .set("poolCount", &bigint0)
+    .set("txCount", &bigint0)
+    .set("totalVolumeUSD", &bigdecimal0)
+    .set("totalVolumeETH", &bigdecimal0)
+    .set("totalFeesUSD", &bigdecimal0)
+    .set("totalFeesETH", &bigdecimal0)
+    .set("untrackedVolumeUSD", &bigdecimal0)
+    .set("totalValueLockedUSD", &bigdecimal0)
+    .set("totalValueLockedETH", &bigdecimal0)
+    .set("totalValueLockedUSDUntracked", &bigdecimal0)
+    .set("totalValueLockedETHUntracked", &bigdecimal0)
+    .set("owner", &format!("0x{}", Hex(utils::ZERO_ADDRESS).to_string()));
+
+  // Update a row (<entity_name>, <id>).[set(<column>, <value>), ...]
+  tables
+    .update_row("Bundle", "1").set("ethPriceUSD", &delta.new_value);
+  ```
+
+* Added clean invalid string byte sequence when using a `String`, `&String`, `Delta<String>`, `Delta<&String>`, `Vec<String>`, `&Vec<String>`, `DeltaArray<String>` and `&DeltaArray<String>`
 
 ## [1.1.1]
 
-* Added implementations on the ToField trait used by the EntityChange struct for BigInt, BigDecimal, and Bytes arrays. 
+* Added implementations on the ToField trait used by the EntityChange struct for BigInt, BigDecimal, and Bytes arrays.
 
 ## [1.1.0]
 
