@@ -80,7 +80,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
     .update_row("Bundle", "1").set("ethPriceUSD", &delta.new_value);
   ```
 
-* Added clean invalid string byte sequence when using a `String`, `&String`, `Delta<String>`, `Delta<&String>`, `Vec<String>`, `&Vec<String>`, `DeltaArray<String>` and `&DeltaArray<String>`
+* Added clean invalid string byte sequence when using a `String`, `&String`, `Delta<String>`, `Delta<&String>`, `Vec<String>`, `&Vec<String>`, `DeltaArray<String>` and `&DeltaArray<String>`.
 
 ## [1.1.1]
 
