@@ -1,11 +1,5 @@
 version: v1
-name: buf.build/streamingfast/substreams-sink-entity-changes
-
-deps: []
-
-build:
-  excludes:
-  - google
+name: buf.build/streamingfast/substreams-sink-entity
 
 lint:
   use:
