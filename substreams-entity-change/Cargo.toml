@@ -1,16 +1,7 @@
 [package]
 name = "substreams-entity-change"
-version = "1.2.2"
-edition = "2021"
-description = "Substreams entity change library containing helpers"
-authors = ["StreamingFast Contributors <team@streamingfast.io>"]
-license = "Apache-2.0"
-homepage = "https://substreams.streamingfast.io/"
-repository = "https://github.com/streamingfast/substreams-entity-change"
-readme = "../README.md"
-keywords = [ "substreams", "streamingfast", "firehose", "thegraph", "entity"]
-categories = ["api-bindings", "external-ffi-bindings", "wasm"]
-rust-version = "1.63"
+version.workspace = true
+edition.workspace = true
 
 [dependencies]
 prost = "0.11"

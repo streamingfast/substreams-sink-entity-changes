@@ -147,6 +147,7 @@ impl ToField for &DeltaArray<BigDecimal> {
             _ => panic!("unsupported operation {:?}", self.operation),
         }
 
+        #[allow(deprecated)]
         Field {
             name: name.as_ref().to_string(),
             new_value,
@@ -199,6 +200,7 @@ impl ToField for &DeltaArray<BigInt> {
             _ => panic!("unsupported operation {:?}", self.operation),
         }
 
+        #[allow(deprecated)]
         Field {
             name: name.as_ref().to_string(),
             new_value,
@@ -317,6 +319,7 @@ impl ToField for &DeltaArray<Vec<u8>> {
             _ => panic!("unsupported operation {:?}", self.operation),
         }
 
+        #[allow(deprecated)]
         Field {
             name: name.as_ref().to_string(),
             new_value,
@@ -368,6 +371,7 @@ impl ToField for &DeltaBool {
             _ => panic!("unsupported operation {:?}", self.operation),
         }
 
+        #[allow(deprecated)]
         Field {
             name: name.as_ref().to_string(),
             new_value,
@@ -420,6 +424,7 @@ impl ToField for &DeltaArray<String> {
             _ => panic!("unsupported operation {:?}", self.operation),
         }
 
+        #[allow(deprecated)]
         Field {
             name: name.as_ref().to_string(),
             new_value,
@@ -448,6 +453,7 @@ impl Into<Typed> for &::prost_types::Timestamp {
 
 impl<T: Into<Typed>> ToField for T {
     fn to_field<N: AsRef<str>>(self, name: N) -> Field {
+        #[allow(deprecated)]
         Field {
             name: name.as_ref().to_string(),
             old_value: None,
@@ -460,6 +466,7 @@ impl<T: Into<Typed>> ToField for T {
 
 impl<T: Into<Typed>> ToField for (T, T) {
     fn to_field<N: AsRef<str>>(self, name: N) -> Field {
+        #[allow(deprecated)]
         Field {
             name: name.as_ref().to_string(),
             old_value: Some(Value {
@@ -476,13 +483,17 @@ impl<T: Into<Typed>> ToField for (T, Option<T>) {
     fn to_field<N: AsRef<str>>(self, name: N) -> Field {
         match self.1 {
             Some(x) => ToField::to_field((self.0, x), name),
-            None => Field {
-                name: name.as_ref().to_string(),
-                old_value: Some(Value {
-                    typed: Some(self.0.into()),
-                }),
-                new_value: None,
-            },
+            None =>
+            {
+                #[allow(deprecated)]
+                Field {
+                    name: name.as_ref().to_string(),
+                    old_value: Some(Value {
+                        typed: Some(self.0.into()),
+                    }),
+                    new_value: None,
+                }
+            }
         }
     }
 }
@@ -1077,6 +1088,7 @@ mod test {
             name: name.as_ref().to_string(),
             ..Default::default()
         };
+        #[allow(deprecated)]
         if old_value.is_some() {
             field.old_value = Some(Value { typed: old_value })
         }

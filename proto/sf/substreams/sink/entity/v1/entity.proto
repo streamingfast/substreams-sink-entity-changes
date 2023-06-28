@@ -1,7 +1,8 @@
 syntax = "proto3";
 
-package sf.substreams.entity.v1;
-option go_package = "github.com/streamingfast/substreams-entity-change/pb;entityv1";
+package sf.substreams.sink.entity.v1;
+
+option go_package = "github.com/streamingfast/substreams-sink-entity-changes/pb/sf/substreams/sink/entity/v1;pbentity";
 
 message EntityChanges {
   repeated EntityChange entity_changes = 5;
@@ -13,11 +14,11 @@ message EntityChange {
   // Deprecated, this is not used within `graph-node`.
   uint64 ordinal = 3;
   enum Operation {
-    UNSET = 0;    // Protobuf default should not be used, this is used so that the consume can ensure that the value was actually specified
-    CREATE = 1;
-    UPDATE = 2;
-    DELETE = 3;
-    FINAL = 4;
+    OPERATION_UNSPECIFIED = 0;    // Protobuf default should not be used, this is used so that the consume can ensure that the value was actually specified
+    OPERATION_CREATE = 1;
+    OPERATION_UPDATE = 2;
+    OPERATION_DELETE = 3;
+    OPERATION_FINAL = 4;
   }
   Operation operation = 4;
   repeated Field fields = 5;

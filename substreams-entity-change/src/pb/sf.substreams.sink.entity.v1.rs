@@ -14,6 +14,7 @@ pub struct EntityChange {
     pub id: ::prost::alloc::string::String,
     /// Deprecated, this is not used within `graph-node`.
     #[prost(uint64, tag="3")]
+    #[deprecated(since="1.3.0",note="not used by 'graph-node', will be removed")]
     pub ordinal: u64,
     #[prost(enumeration="entity_change::Operation", tag="4")]
     pub operation: i32,
@@ -26,7 +27,7 @@ pub mod entity_change {
     #[repr(i32)]
     pub enum Operation {
         /// Protobuf default should not be used, this is used so that the consume can ensure that the value was actually specified
-        Unset = 0,
+        Unspecified = 0,
         Create = 1,
         Update = 2,
         Delete = 3,
@@ -39,21 +40,21 @@ pub mod entity_change {
         /// (if the ProtoBuf definition does not change) and safe for programmatic use.
         pub fn as_str_name(&self) -> &'static str {
             match self {
-                Operation::Unset => "UNSET",
-                Operation::Create => "CREATE",
-                Operation::Update => "UPDATE",
-                Operation::Delete => "DELETE",
-                Operation::Final => "FINAL",
+                Operation::Unspecified => "OPERATION_UNSPECIFIED",
+                Operation::Create => "OPERATION_CREATE",
+                Operation::Update => "OPERATION_UPDATE",
+                Operation::Delete => "OPERATION_DELETE",
+                Operation::Final => "OPERATION_FINAL",
             }
         }
         /// Creates an enum from field names used in the ProtoBuf definition.
         pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
             match value {
-                "UNSET" => Some(Self::Unset),
-                "CREATE" => Some(Self::Create),
-                "UPDATE" => Some(Self::Update),
-                "DELETE" => Some(Self::Delete),
-                "FINAL" => Some(Self::Final),
+                "OPERATION_UNSPECIFIED" => Some(Self::Unspecified),
+                "OPERATION_CREATE" => Some(Self::Create),
+                "OPERATION_UPDATE" => Some(Self::Update),
+                "OPERATION_DELETE" => Some(Self::Delete),
+                "OPERATION_FINAL" => Some(Self::Final),
                 _ => None,
             }
         }
@@ -103,6 +104,7 @@ pub struct Field {
     pub new_value: ::core::option::Option<Value>,
     /// Deprecated, this is not used within `graph-node`.
     #[prost(message, optional, tag="5")]
+    #[deprecated(since="1.3.0",note="not used by 'graph-node', will be removed")]
     pub old_value: ::core::option::Option<Value>,
 }
 // @@protoc_insertion_point(module)

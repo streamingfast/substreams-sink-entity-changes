@@ -24,6 +24,7 @@ impl EntityChange {
         ordinal: u64,
         operation: Operation,
     ) -> EntityChange {
+        #[allow(deprecated)]
         EntityChange {
             entity: entity.as_ref().to_string(),
             id: id.as_ref().to_string(),

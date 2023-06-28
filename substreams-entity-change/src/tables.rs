@@ -79,7 +79,7 @@ impl Tables {
             .entry(key.as_ref().to_string())
             .or_insert(Row::new());
         match row.operation {
-            Operation::Unset => {
+            Operation::Unspecified => {
                 row.operation = Operation::Create;
             }
             Operation::Create => {}
@@ -105,7 +105,7 @@ impl Tables {
             .entry(key.as_ref().to_string())
             .or_insert(Row::new());
         match row.operation {
-            Operation::Unset => {
+            Operation::Unspecified => {
                 row.operation = Operation::Update;
             }
             Operation::Create => {}
@@ -131,12 +131,12 @@ impl Tables {
             .entry(key.as_ref().to_string())
             .or_insert(Row::new());
         match row.operation {
-            Operation::Unset => {
+            Operation::Unspecified => {
                 row.operation = Operation::Delete;
             }
             Operation::Create => {
                 // simply clear the thing
-                row.operation = Operation::Unset;
+                row.operation = Operation::Unspecified;
                 row.columns = HashMap::new();
             }
             Operation::Update => {
@@ -157,7 +157,7 @@ impl Tables {
         let mut entities = EntityChanges::default();
         for (table, rows) in self.tables.into_iter() {
             for (pk, row) in rows.pks.into_iter() {
-                if row.operation == Operation::Unset {
+                if row.operation == Operation::Unspecified {
                     continue;
                 }
 
@@ -177,6 +177,7 @@ impl Tables {
                 // Map the row.operation into an EntityChange.Operation
                 let mut change = EntityChange::new(table.clone(), pk, 0, row.operation);
                 for (field, value) in row.columns.into_iter() {
+                    #[allow(deprecated)]
                     change.fields.push(Field {
                         name: field,
                         new_value: Some(value),
@@ -222,7 +223,7 @@ pub struct Row {
 impl Row {
     pub fn new() -> Self {
         Row {
-            operation: Operation::Unset,
+            operation: Operation::Unspecified,
             columns: HashMap::new(),
             finalized: false,
         }

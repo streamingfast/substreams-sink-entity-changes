@@ -1,8 +1,8 @@
 specVersion: v0.1.0
 package:
   name: substreams_entity_change
-  version: v1.2.2
-  url: https://github.com/streamingfast/substreams-entity-change
+  version: v1.3.0
+  url: https://github.com/streamingfast/substreams-sink-entity-changes
   doc: |
     Protobuf definitions for Substreams Entity Change modules.
 
@@ -10,6 +10,6 @@ package:
 
 protobuf:
   files:
-    - sf/substreams/entity/v1/entity.proto
+    - sf/substreams/sink/entity/v1/entity.proto
   importPaths:
     - ./proto

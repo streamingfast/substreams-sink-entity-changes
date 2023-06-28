@@ -3,6 +3,18 @@ members = [
     "substreams-entity-change",
 ]
 
+[workspace.package]
+version = "1.3.0"
+edition = "2021"
+description = "Substreams entity change library containing helpers"
+authors = ["StreamingFast Contributors <team@streamingfast.io>"]
+readme = "README.md"
+homepage = "https://substreams.streamingfast.io/"
+repository = "https://github.com/streamingfast/substreams-sink-entity-changes"
+license = "Apache-2.0"
+keywords = [ "substreams", "streamingfast", "firehose", "thegraph", "entity"]
+categories = ["api-bindings", "external-ffi-bindings", "wasm"]
+
 [profile.release]
 lto = true
 opt-level = 's'
