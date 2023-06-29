@@ -1,6 +1,6 @@
 specVersion: v0.1.0
 package:
-  name: substreams_entity_change
+  name: substreams_sink_entity_changes
   version: v1.3.0
   url: https://github.com/streamingfast/substreams-sink-entity-changes
   doc: |
