@@ -6,7 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [1.3.0]
 
-* **Breaking** Protobuf package id has been renamed to `sf.substreams.sink.entity.v1` (previously `sf.substreams.entity.v1`). This is actually a soft breaking change, you will not see breaking code due just by bumping to this version and also, `graph-node` accepts the both package ids. The only change required on your part is changing your imports and module's output type from (not the differences on `entities_change` and `output.type` fields):
+* **Breaking** Protobuf package id has been renamed to `sf.substreams.sink.entity.v1` (previously `sf.substreams.entity.v1`). This is actually a soft breaking change, you will not see breaking code due just by bumping to this version and also, `graph-node` accepts the both package ids. The only change required on your part is changing your imports and module's output type (not the differences on `entities_change` and `output.type` fields):
+
+  From
 
   ```yaml
   imports:
