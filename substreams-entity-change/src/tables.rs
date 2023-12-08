@@ -343,6 +343,46 @@ impl ToValue for &Vec<String> {
     }
 }
 
+impl ToValue for &Vec<BigInt> {
+    fn to_value(self) -> Value {
+        Value {
+            typed: Some(Typed::Array(Array {
+                value: self.iter().map(ToValue::to_value).collect(),
+            })),
+        }
+    }
+}
+
+impl ToValue for Vec<BigInt> {
+    fn to_value(self) -> Value {
+        Value {
+            typed: Some(Typed::Array(Array {
+                value: self.into_iter().map(ToValue::to_value).collect(),
+            })),
+        }
+    }
+}
+
+impl ToValue for &Vec<BigDecimal> {
+    fn to_value(self) -> Value {
+        Value {
+            typed: Some(Typed::Array(Array {
+                value: self.iter().map(ToValue::to_value).collect(),
+            })),
+        }
+    }
+}
+
+impl ToValue for Vec<BigDecimal> {
+    fn to_value(self) -> Value {
+        Value {
+            typed: Some(Typed::Array(Array {
+                value: self.into_iter().map(ToValue::to_value).collect(),
+            })),
+        }
+    }
+}
+
 impl ToValue for &::prost_types::Timestamp {
     fn to_value(self) -> Value {
         Value {
