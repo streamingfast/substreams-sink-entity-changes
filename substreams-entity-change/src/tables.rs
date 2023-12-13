@@ -465,7 +465,7 @@ impl_to_int32_value!(i32);
 
 #[cfg(test)]
 mod test {
-    use crate::pb::entity::{EntityChange, EntityChanges, entity_change::Operation, Field, Value, value::Typed, Array};
+    use crate::pb::entity::{EntityChange, entity_change::Operation, Field, Value, value::Typed, Array};
 
     use super::Tables;
 
@@ -479,7 +479,6 @@ mod test {
         assert_eq!(changes.entity_changes[0], EntityChange {
             entity: "table".to_string(),
             id: "1".to_string(),
-            ordinal: 0,
             operation: Operation::Create as i32,
             fields: vec![
                 Field {
@@ -493,9 +492,10 @@ mod test {
                             ],
                         })),
                     }),
-                    old_value: None,
+                    ..Default::default()
                 }
             ],
+            ..Default::default()
          });
     }
 }
