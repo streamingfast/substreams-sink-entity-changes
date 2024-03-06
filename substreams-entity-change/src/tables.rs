@@ -465,37 +465,40 @@ impl_to_int32_value!(i32);
 
 #[cfg(test)]
 mod test {
-    use crate::pb::entity::{EntityChange, entity_change::Operation, Field, Value, value::Typed, Array};
+    use crate::pb::entity::{
+        entity_change::Operation, value::Typed, Array, EntityChange, Field, Value,
+    };
 
     use super::Tables;
 
     #[test]
     fn test_vec_vec_u8() {
         let mut tables = Tables::new();
-        tables.create_row("table", "1").set("field", &vec![vec![1, 2, 3]]);
+        tables
+            .create_row("table", "1")
+            .set("field", &vec![vec![1, 2, 3]]);
 
         let changes = tables.to_entity_changes();
         assert_eq!(changes.entity_changes.len(), 1);
-        assert_eq!(changes.entity_changes[0], EntityChange {
-            entity: "table".to_string(),
-            id: "1".to_string(),
-            operation: Operation::Create as i32,
-            fields: vec![
-                Field {
+        assert_eq!(
+            changes.entity_changes[0],
+            EntityChange {
+                entity: "table".to_string(),
+                id: "1".to_string(),
+                operation: Operation::Create as i32,
+                fields: vec![Field {
                     name: "field".to_string(),
                     new_value: Some(Value {
                         typed: Some(Typed::Array(Array {
-                            value: vec![
-                                Value {
-                                    typed: Some(Typed::Bytes("AQID".to_string())),
-                                }
-                            ],
+                            value: vec![Value {
+                                typed: Some(Typed::Bytes("AQID".to_string())),
+                            }],
                         })),
                     }),
                     ..Default::default()
-                }
-            ],
-            ..Default::default()
-         });
+                }],
+                ..Default::default()
+            }
+        );
     }
 }
