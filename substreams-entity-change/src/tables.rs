@@ -59,7 +59,7 @@ use crate::pb::entity::{Array, EntityChange, EntityChanges, Field, Value};
 use std::collections::HashMap;
 use substreams::scalar::{BigDecimal, BigInt};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Tables {
     // Map from table name to the primary keys within that table
     pub tables: HashMap<String, Rows>,
@@ -196,7 +196,7 @@ impl Tables {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Rows {
     // Map of primary keys within this table, to the fields within
     pub pks: HashMap<String, Row>,
@@ -210,7 +210,7 @@ impl Rows {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Row {
     // Verify that we don't try to delete the same row as we're creating it
     pub operation: Operation,
