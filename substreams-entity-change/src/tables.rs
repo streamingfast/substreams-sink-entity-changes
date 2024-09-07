@@ -406,7 +406,7 @@ impl ToValue for Vec<BigDecimal> {
 impl ToValue for &::prost_types::Timestamp {
     fn to_value(self) -> Value {
         Value {
-            typed: Some(Typed::String(self.to_string())),
+            typed: Some(Typed::Timestamp(self.seconds.to_string())),
         }
     }
 }
