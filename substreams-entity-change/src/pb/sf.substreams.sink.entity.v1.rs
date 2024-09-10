@@ -83,8 +83,8 @@ pub mod value {
         Bytes(::prost::alloc::string::String),
         #[prost(bool, tag="6")]
         Bool(bool),
-        #[prost(string, tag="7")]
-        Timestamp(::prost::alloc::string::String),
+        #[prost(int64, tag="7")]
+        Timestamp(i64),
         // reserved 8 to 9;  // For future types
 
         #[prost(message, tag="10")]

@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+Added `Timestamp` type.
+
 ## [1.3.2]
 
 Added `ToValue` implementation for for `Vec<Vec<u8>>` which used to create Graph Node schema object of the form `[Bytes]`.
