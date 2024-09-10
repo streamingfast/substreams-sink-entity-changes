@@ -63,7 +63,7 @@ pub mod entity_change {
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Value {
-    #[prost(oneof="value::Typed", tags="1, 2, 3, 4, 5, 6, 10")]
+    #[prost(oneof="value::Typed", tags="1, 2, 3, 4, 5, 6, 7, 10")]
     pub typed: ::core::option::Option<value::Typed>,
 }
 /// Nested message and enum types in `Value`.
@@ -83,7 +83,9 @@ pub mod value {
         Bytes(::prost::alloc::string::String),
         #[prost(bool, tag="6")]
         Bool(bool),
-        // reserved 7 to 9;  // For future types
+        #[prost(int64, tag="7")]
+        Timestamp(i64),
+        // reserved 8 to 9;  // For future types
 
         #[prost(message, tag="10")]
         Array(super::Array),

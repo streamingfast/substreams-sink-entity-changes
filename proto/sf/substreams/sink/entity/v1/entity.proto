@@ -32,8 +32,9 @@ message Value {
     string string = 4;
     string bytes = 5;
     bool bool = 6;
+    int64 timestamp = 7;
 
-    //reserved 7 to 9;  // For future types
+    //reserved 8 to 9;  // For future types
 
     Array array = 10;
   }

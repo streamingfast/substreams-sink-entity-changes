@@ -406,7 +406,9 @@ impl ToValue for Vec<BigDecimal> {
 impl ToValue for &::prost_types::Timestamp {
     fn to_value(self) -> Value {
         Value {
-            typed: Some(Typed::String(self.to_string())),
+            typed: Some(Typed::Timestamp(
+                self.seconds * 1_000_000 + self.nanos as i64 / 1000,
+            )),
         }
     }
 }
@@ -470,6 +472,37 @@ mod test {
     };
 
     use super::Tables;
+
+    #[test]
+    fn test_timestamp() {
+        let mut tables = Tables::new();
+        tables.create_row("table", "1").set(
+            "field",
+            &::prost_types::Timestamp {
+                seconds: 123,
+                nanos: 456789000,
+            },
+        );
+
+        let changes = tables.to_entity_changes();
+        assert_eq!(changes.entity_changes.len(), 1);
+        assert_eq!(
+            changes.entity_changes[0],
+            EntityChange {
+                entity: "table".to_string(),
+                id: "1".to_string(),
+                operation: Operation::Create as i32,
+                fields: vec![Field {
+                    name: "field".to_string(),
+                    new_value: Some(Value {
+                        typed: Some(Typed::Timestamp(123456789)),
+                    }),
+                    ..Default::default()
+                }],
+                ..Default::default()
+            }
+        );
+    }
 
     #[test]
     fn test_vec_vec_u8() {
